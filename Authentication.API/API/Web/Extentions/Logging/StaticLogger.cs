@@ -1,4 +1,4 @@
-﻿namespace Web.Extensions.Logging
+﻿namespace Web.Extentions.Logging
 {
     using Serilog;
 
