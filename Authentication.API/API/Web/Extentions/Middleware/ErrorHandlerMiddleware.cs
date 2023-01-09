@@ -10,6 +10,8 @@
 
     using Serilog;
 
+    using Shared.Exceptions;
+
     public class ErrorHandlerMiddleware
     {
         private readonly RequestDelegate _next;
@@ -40,6 +42,17 @@
 
             switch (exception)
             {
+
+
+                case CustomException e:
+                    errorResult.StatusCode = (int)e.StatusCode;
+                    if (e.ErrorMessages is not null)
+                    {
+                        errorResult.Messages = e.ErrorMessages;
+                    }
+
+                    break;
+
                 case KeyNotFoundException:
                     errorResult.StatusCode = (int)HttpStatusCode.NotFound;
                     break;
