@@ -7,6 +7,8 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
+    using Web.Extentions.Swagger;
+
     public static class Startup
     {
         public static IServiceCollection AddWeb(this IServiceCollection services, IConfiguration config)
@@ -15,15 +17,14 @@
             services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
 
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.AddSwaggerDocumentation();
 
             return services;
         }
 
         public static IApplicationBuilder UseWeb(this IApplicationBuilder builder)
         {
-            builder.UseSwagger()
-                    .UseSwaggerUI()
+            builder.UseSwaggerDocumentation()
                     .UseStaticFiles()
                     .UseHttpsRedirection()
                     .UseRouting()
