@@ -7,7 +7,16 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
+    using Application;
+    using Application.Interfaces;
+
+    using Web.Services;
     using Web.Extentions.Swagger;
+    using Web.Extentions.Middleware;
+
+    using Infrastructure;
+
+    using Persistence;
 
     public static class Startup
     {
@@ -16,8 +25,13 @@
             services.AddHttpContextAccessor();
             services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
 
-            services.AddEndpointsApiExplorer();
+            services.AddApplication();
+            services.AddInfrastructure(config);
+            services.AddPersistence(config);
+
             services.AddSwaggerDocumentation();
+
+            services.AddScoped<IUser, CurrentUser>();
 
             return services;
         }
@@ -27,6 +41,7 @@
             builder.UseSwaggerDocumentation()
                     .UseStaticFiles()
                     .UseHttpsRedirection()
+                    .UseValidationExceptionHandler()
                     .UseRouting()
                     .UseAuthentication()
                     .UseAuthorization();
@@ -36,8 +51,7 @@
 
         public static IEndpointRouteBuilder MapEndpoints(this IEndpointRouteBuilder builder)
         {
-            builder.MapControllers()
-                    .RequireAuthorization();
+            builder.MapControllers().RequireAuthorization();
 
             return builder;
         }
