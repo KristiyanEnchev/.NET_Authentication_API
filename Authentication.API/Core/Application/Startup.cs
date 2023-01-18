@@ -12,6 +12,7 @@
         {
             services.AddAutoMapper();
             services.AddValidators();
+            services.AddMediator();
         }
 
         private static void AddAutoMapper(this IServiceCollection services)
@@ -23,6 +24,12 @@
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         }
 
-
+        private static void AddMediator(this IServiceCollection services)
+        {
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            });
+        }
     }
 }
