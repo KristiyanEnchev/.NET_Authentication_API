@@ -42,7 +42,14 @@
 
             switch (exception)
             {
-
+                case FluentValidation.ValidationException validationException:
+                    errorResult.StatusCode = (int)HttpStatusCode.BadRequest;
+                    errorResult.Exception = "One or More Validations failed.";
+                    var errors = validationException.Errors
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    errorResult.Messages = errors;
+                    break;
 
                 case CustomException e:
                     errorResult.StatusCode = (int)e.StatusCode;
