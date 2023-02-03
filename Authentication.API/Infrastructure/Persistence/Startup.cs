@@ -22,6 +22,8 @@
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(connectionString,
                    builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+            services.AddScoped<ApplicationDbContextInitialiser>();
         }
     }
 }
