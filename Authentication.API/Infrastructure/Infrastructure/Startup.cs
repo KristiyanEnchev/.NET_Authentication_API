@@ -15,6 +15,7 @@
     using Infrastructure.Services;
 
     using Persistence.Contexts;
+    using Models;
 
     public static class Startup
     {
@@ -47,6 +48,19 @@
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddTokenProvider("Authentication.Api", typeof(DataProtectorTokenProvider<User>));
+        }
+        private static void AddConfigurations(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<ApplicationSettings>(configuration.GetSection(nameof(ApplicationSettings)));
+        }
+
+
+        private static void AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
+        {
+        }
+
+        private static void AddCustomAuthorization(this IServiceCollection services, IConfiguration configuration)
+        {
         }
     }
 }
