@@ -1,8 +1,12 @@
 ﻿namespace Infrastructure
 {
+    using System.Text;
+
+    using Microsoft.IdentityModel.Tokens;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
 
     using MediatR;
 
@@ -15,6 +19,7 @@
     using Infrastructure.Services;
 
     using Persistence.Contexts;
+
     using Models;
 
     public static class Startup
@@ -57,6 +62,30 @@
 
         private static void AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
+            var secret = configuration
+                .GetSection(nameof(ApplicationSettings))
+                .GetValue<string>(nameof(ApplicationSettings.Secret))!;
+
+            var key = Encoding.UTF8.GetBytes(secret);
+
+            services
+                .AddAuthentication(authentication =>
+                {
+                    authentication.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    authentication.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(bearer =>
+                {
+                    bearer.RequireHttpsMetadata = false;
+                    bearer.SaveToken = true;
+                    bearer.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                });
         }
 
         private static void AddCustomAuthorization(this IServiceCollection services, IConfiguration configuration)
