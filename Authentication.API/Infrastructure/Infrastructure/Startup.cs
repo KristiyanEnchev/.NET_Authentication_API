@@ -21,6 +21,7 @@
     using Persistence.Contexts;
 
     using Models;
+    using Persistence.Constants;
 
     public static class Startup
     {
@@ -90,6 +91,8 @@
 
         private static void AddCustomAuthorization(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddAuthorization(options =>
+                options.AddPolicy(Policies.CanDelete, policy => policy.RequireRole(Roles.Administrator)));
         }
     }
 }
