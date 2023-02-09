@@ -27,21 +27,27 @@
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddServices(configuration);
-            services.AddIdentity(configuration);
+            services
+                .AddServices()
+                .AddIdentity()
+                .AddConfigurations(configuration)
+                .AddCustomAuthentication(configuration)
+                .AddCustomAuthorization();
 
             return services;
         }
 
-        private static void AddServices(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddServices(this IServiceCollection services)
         {
             services
                 .AddTransient<IMediator, Mediator>()
                 .AddTransient<IDomainEventDispatcher, DomainEventDispatcher>()
                 .AddTransient<IDateTimeService, DateTimeService>();
+
+            return services;
         }
 
-        private static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddIdentity(this IServiceCollection services)
         {
             services
                 .AddIdentity<User, UserRole>(options =>
@@ -54,14 +60,17 @@
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddTokenProvider("Authentication.Api", typeof(DataProtectorTokenProvider<User>));
+
+            return services;
         }
-        private static void AddConfigurations(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddConfigurations(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<ApplicationSettings>(configuration.GetSection(nameof(ApplicationSettings)));
+            return services;
         }
 
 
-        private static void AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             var secret = configuration
                 .GetSection(nameof(ApplicationSettings))
@@ -87,12 +96,15 @@
                         ValidateAudience = false
                     };
                 });
+            return services;
         }
 
-        private static void AddCustomAuthorization(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddCustomAuthorization(this IServiceCollection services)
         {
             services.AddAuthorization(options =>
                 options.AddPolicy(Policies.CanDelete, policy => policy.RequireRole(Roles.Administrator)));
+
+            return services;
         }
     }
 }
