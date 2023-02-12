@@ -4,8 +4,10 @@
 
     using Application.Identity.Commands.Register;
 
+    using Shared;
+
     public interface IIdentity
     {
-        Task<string> Register(UserRegisterRequestModel userRequest);
+        Task<Result<string>> Register(UserRegisterRequestModel userRequest);
     }
 }

@@ -8,6 +8,7 @@
     using Domain.Events;
     using Domain.Entities.Identity;
 
+    using Shared;
     using Shared.Exceptions;
 
     using Application.Interfaces;
@@ -22,7 +23,7 @@
             this.userManager = userManager;
         }
 
-        public async Task<string> Register(UserRegisterRequestModel userRequest)
+        public async Task<Result<string>> Register(UserRegisterRequestModel userRequest)
         {
             var checkForEmailExist = await userManager.FindByEmailAsync(userRequest.Email);
 
@@ -58,7 +59,7 @@
 
             user.AddDomainEvent(userRegisteredEvent);
 
-            return "Succesfull Registration !";
+            return Result<string>.Success("Succesfull Registration !");
         }
     }
 }

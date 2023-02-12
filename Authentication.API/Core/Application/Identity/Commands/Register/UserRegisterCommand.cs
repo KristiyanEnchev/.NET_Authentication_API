@@ -7,17 +7,19 @@
 
     using Application.Interfaces;
 
-    public class UserRegisterCommand : UserRegisterRequestModel, IRequest<string>
+    using Shared;
+
+    public class UserRegisterCommand : UserRegisterRequestModel, IRequest<Result<string>>
     {
         public UserRegisterCommand(string firstName, string lastName, string email, string password, string confirmPassword)
-            : base(firstName, lastName, email, password) 
+            : base(firstName, lastName, email, password)
         {
             ConfirmPassword = confirmPassword;
         }
 
         public string ConfirmPassword { get; }
 
-        public class UserRegisterCommandHandler : IRequestHandler<UserRegisterCommand, string>
+        public class UserRegisterCommandHandler : IRequestHandler<UserRegisterCommand, Result<string>>
         {
             private readonly IIdentity identity;
 
@@ -26,7 +28,7 @@
                 this.identity = identity;
             }
 
-            public async Task<string> Handle(UserRegisterCommand request, CancellationToken cancellationToken)
+            public async Task<Result<string>> Handle(UserRegisterCommand request, CancellationToken cancellationToken)
             {
                 var result = await identity.Register(request);
 

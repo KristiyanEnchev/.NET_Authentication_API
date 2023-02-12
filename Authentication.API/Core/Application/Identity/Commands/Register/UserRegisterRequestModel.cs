@@ -1,7 +1,6 @@
 ﻿namespace Application.Identity.Commands.Register
 {
     using Application.Identity.Common;
-    using Common;
 
     public class UserRegisterRequestModel : UserRequestModel
     {
