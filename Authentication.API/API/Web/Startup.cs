@@ -17,6 +17,7 @@
     using Infrastructure;
 
     using Persistence;
+    using Persistence.Contexts;
 
     public static class Startup
     {
@@ -34,6 +35,17 @@
             services.AddScoped<IUser, CurrentUser>();
 
             return services;
+        }
+
+        public static async Task InitializeDatabase(this IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+
+            var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+
+            await initialiser.InitialiseAsync();
+
+            await initialiser.SeedAsync();
         }
 
         public static IApplicationBuilder UseWeb(this IApplicationBuilder builder)
