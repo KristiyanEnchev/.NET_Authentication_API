@@ -13,14 +13,21 @@
 
     using Application.Interfaces;
     using Application.Identity.Commands.Register;
+    using Application.Identity.Common;
 
     internal class IdentityService : IIdentity
     {
-        private readonly UserManager<User> userManager;
+        private const string InvalidErrorMessage = "Invalid credentials.";
 
-        public IdentityService(UserManager<User> userManager)
+        private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
+        private readonly IJwtGenerator jwtGenerator;
+
+        public IdentityService(UserManager<User> userManager, IJwtGenerator jwtGenerator, SignInManager<User> signInManager)
         {
             this.userManager = userManager;
+            this.jwtGenerator = jwtGenerator;
+            this.signInManager = signInManager;
         }
 
         public async Task<Result<string>> Register(UserRegisterRequestModel userRequest)
@@ -60,6 +67,27 @@
             user.AddDomainEvent(userRegisteredEvent);
 
             return Result<string>.Success("Succesfull Registration !");
+        }
+
+        public async Task<Result<UserResponseModel>> Login(UserRequestModel userRequest)
+        {
+            if (await userManager.FindByEmailAsync(userRequest.Email.Trim().Normalize()) is not { } user
+                || !await userManager.CheckPasswordAsync(user, userRequest.Password)
+                || !user.IsActive)
+            {
+                throw new CustomException(InvalidErrorMessage, null, System.Net.HttpStatusCode.Unauthorized);
+            }
+
+            SignInResult signInResult = await signInManager.PasswordSignInAsync(user, userRequest.Password, false, lockoutOnFailure: false);
+
+            if (!signInResult.Succeeded)
+            {
+                throw new CustomException(InvalidErrorMessage, null, System.Net.HttpStatusCode.Unauthorized);
+            }
+
+            var tokenResult = await jwtGenerator.GenerateToken(user);
+
+            return Result<UserResponseModel>.Success(tokenResult);
         }
     }
 }
