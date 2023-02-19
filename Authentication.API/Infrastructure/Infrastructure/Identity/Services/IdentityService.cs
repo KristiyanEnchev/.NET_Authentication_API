@@ -89,5 +89,14 @@
 
             return Result<UserResponseModel>.Success(tokenResult);
         }
+
+        public async Task<Result<UserResponseModel>> RefreshTokenAsync(string refreshToken)
+        {
+            var user = await jwtGenerator.ValidateRefreshToken(refreshToken);
+
+            var tokenResult = await jwtGenerator.GenerateToken(user);
+
+            return Result<UserResponseModel>.Success(tokenResult);
+        }
     }
 }
