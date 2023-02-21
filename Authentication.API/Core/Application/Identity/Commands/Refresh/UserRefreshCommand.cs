@@ -6,6 +6,7 @@
     using MediatR;
 
     using Application.Interfaces;
+    using Application.Identity.Common;
     using Application.Identity.Commands.Common;
 
     public class UserRefreshCommand : UserRefreshModel, IRequest<UserResponseModel>
