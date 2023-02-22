@@ -98,5 +98,19 @@
 
             return Result<UserResponseModel>.Success(tokenResult);
         }
+
+        public async Task<Result<bool>> LogoutAsync(string userEmail)
+        {
+            var user = await userManager.FindByEmailAsync(userEmail);
+
+            if (user != null)
+            {
+                await jwtGenerator.RemoveAuthenticationToken(user);
+            }
+
+            await signInManager.SignOutAsync();
+
+            return Result<bool>.Success();
+        }
     }
 }
