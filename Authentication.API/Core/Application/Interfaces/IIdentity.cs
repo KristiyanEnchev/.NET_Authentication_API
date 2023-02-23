@@ -12,5 +12,6 @@
         Task<Result<string>> Register(UserRegisterRequestModel userRequest);
         Task<Result<UserResponseModel>> Login(UserRequestModel userRequest);
         Task<Result<UserResponseModel>> RefreshTokenAsync(string refreshToken);
+        Task<Result<bool>> LogoutAsync(string userEmail);
     }
 }
