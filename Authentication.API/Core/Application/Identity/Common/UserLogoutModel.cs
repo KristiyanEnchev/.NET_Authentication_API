@@ -1,10 +1,10 @@
-﻿namespace Application.Identity.Commands.Common
+﻿namespace Application.Identity.Common
 {
     public abstract class UserLogoutModel
     {
         protected internal UserLogoutModel(string email)
         {
-            this.Email = email;
+            Email = email;
         }
 
         public string Email { get; set; }

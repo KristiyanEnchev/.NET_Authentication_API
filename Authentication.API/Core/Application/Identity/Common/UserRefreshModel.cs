@@ -1,10 +1,10 @@
-﻿namespace Application.Identity.Commands.Common
+﻿namespace Application.Identity.Common
 {
     public abstract class UserRefreshModel
     {
         protected internal UserRefreshModel(string refreshToken)
         {
-            this.RefreshToken = refreshToken;
+            RefreshToken = refreshToken;
         }
 
         public string RefreshToken { get; set; }
