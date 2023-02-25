@@ -11,6 +11,7 @@
     using Application.Identity.Commands.Login;
     using Application.Identity.Commands.Register;
     using Application.Identity.Commands.Refresh;
+    using Application.Identity.Commands.Logout;
 
     public class IdentityController : ApiController
     {
@@ -35,6 +36,13 @@
         public async Task<ActionResult<UserResponseModel>> Refresh(UserRefreshCommand request)
         {
             return await Mediator.Send(request);
+        }
+
+        [HttpPost(nameof(Logout))]
+        [SwaggerOperation("Logs out a user", "")]
+        public async Task<ActionResult<bool>> Logout(UserLogoutCommand email)
+        {
+            return await Mediator.Send(email);
         }
     }
 }
