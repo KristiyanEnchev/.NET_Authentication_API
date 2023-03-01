@@ -19,9 +19,10 @@
     using Infrastructure.Services;
 
     using Persistence.Contexts;
+    using Persistence.Constants;
 
     using Models;
-    using Persistence.Constants;
+    using Infrastructure.Identity.Services;
 
     public static class Startup
     {
@@ -50,6 +51,8 @@
         private static IServiceCollection AddIdentity(this IServiceCollection services)
         {
             services
+                 .AddTransient<IIdentity, IdentityService>()
+                .AddTransient<IJwtGenerator, JwtGeneratorService>()
                 .AddIdentity<User, UserRole>(options =>
                 {
                     options.Password.RequiredLength = 6;
