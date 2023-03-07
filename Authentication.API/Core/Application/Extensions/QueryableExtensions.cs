@@ -2,6 +2,8 @@
 {
     using Microsoft.EntityFrameworkCore;
 
+    using Application.Common;
+
     using Shared;
 
     public static class QueryableExtensions
@@ -14,6 +16,13 @@
             pageNumber = pageNumber <= 0 ? 1 : pageNumber;
             List<T> items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
             return PaginatedResult<T>.Create(items, count, pageNumber, pageSize);
+        }
+
+        public static IQueryable<T> Sort<T>(this IQueryable<T> queryable, SortOrder<T> sortOrder)
+        {
+            return sortOrder.Order == SortOrder<T>.Descending
+                    ? queryable.OrderByDescending(sortOrder.ToExpression())
+                    : queryable.OrderBy(sortOrder.ToExpression());
         }
     }
 }
