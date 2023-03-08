@@ -23,6 +23,10 @@
 
     using Models;
     using Infrastructure.Identity.Services;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Options;
+    using System.Net;
+    using Newtonsoft.Json;
 
     public static class Startup
     {
@@ -51,7 +55,7 @@
         private static IServiceCollection AddIdentity(this IServiceCollection services)
         {
             services
-                 .AddTransient<IIdentity, IdentityService>()
+                .AddTransient<IIdentity, IdentityService>()
                 .AddTransient<IJwtGenerator, JwtGeneratorService>()
                 .AddIdentity<User, UserRole>(options =>
                 {
@@ -71,7 +75,6 @@
             services.Configure<ApplicationSettings>(configuration.GetSection(nameof(ApplicationSettings)));
             return services;
         }
-
 
         private static IServiceCollection AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
@@ -97,6 +100,24 @@
                         IssuerSigningKey = new SymmetricSecurityKey(key),
                         ValidateIssuer = false,
                         ValidateAudience = false
+                    };
+
+                    bearer.Events = new JwtBearerEvents
+                    {
+                        OnChallenge = async context =>
+                        {
+                            context.HandleResponse(); 
+                            var errorResult = new 
+                            {
+                                StatusCode = (int)HttpStatusCode.Unauthorized,
+                                Messages = new List<string> { "Authentication failed. Access is denied." },
+                                Exception = "Unauthorized Access"
+                            };
+                            var response = context.Response;
+                            response.ContentType = "application/json";
+                            response.StatusCode = errorResult.StatusCode;
+                            await response.WriteAsync(JsonConvert.SerializeObject(errorResult));
+                        }
                     };
                 });
             return services;
