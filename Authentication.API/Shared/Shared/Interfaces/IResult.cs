@@ -1,15 +1,11 @@
 ﻿namespace Shared.Interfaces
 {
+    using System.Collections.Generic;
+
     public interface IResult<T>
     {
-        List<string> Messages { get; set; }
-
-        bool Succeeded { get; set; }
-
+        bool Success { get; set; }
         T Data { get; set; }
-
-        Exception Exception { get; set; }
-
-        int Code { get; set; }
+        List<string> Errors { get; set; }
     }
 }

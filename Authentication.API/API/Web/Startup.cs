@@ -12,7 +12,7 @@
 
     using Web.Services;
     using Web.Extentions.Swagger;
-    using Web.Extentions.Middleware;
+    using Web.Extensions.Middleware;
 
     using Infrastructure;
 
@@ -53,7 +53,7 @@
             builder.UseSwaggerDocumentation()
                     .UseStaticFiles()
                     .UseHttpsRedirection()
-                    .UseValidationExceptionHandler()
+                    .UseErrorHandler()
                     .UseRouting()
                     .UseAuthentication()
                     .UseAuthorization();

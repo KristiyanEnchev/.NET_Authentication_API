@@ -1,6 +1,10 @@
-﻿namespace Web.Extentions.Middleware
+﻿namespace Web.Extensions.Middleware
 {
+    using System;
     using System.Net;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using System.Collections.Generic;
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Builder;
@@ -35,81 +39,66 @@
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var errorResult = new ErrorResult
-            {
-                Exception = exception.Message.Trim(),
-            };
+            var statusCode = HttpStatusCode.InternalServerError;
+            var messages = new List<string>();
 
             switch (exception)
             {
                 case FluentValidation.ValidationException validationException:
-                    errorResult.StatusCode = (int)HttpStatusCode.BadRequest;
-                    errorResult.Exception = "One or More Validations failed.";
-                    var errors = validationException.Errors
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
-                    errorResult.Messages = errors;
+                    statusCode = HttpStatusCode.BadRequest;
+                    messages.AddRange(validationException.Errors.Select(e => e.ErrorMessage));
                     break;
 
-                case CustomException e:
-                    errorResult.StatusCode = (int)e.StatusCode;
-                    if (e.ErrorMessages is not null)
-                    {
-                        errorResult.Messages = e.ErrorMessages;
-                    }
-
+                case CustomException customException:
+                    statusCode = (HttpStatusCode)customException.StatusCode;
+                    messages.AddRange(customException.ErrorMessages ?? new List<string> { customException.Message });
                     break;
 
-                case KeyNotFoundException:
-                    errorResult.StatusCode = (int)HttpStatusCode.NotFound;
+                case KeyNotFoundException _:
+                    statusCode = HttpStatusCode.NotFound;
                     break;
 
                 case NotImplementedException _:
-                    errorResult.StatusCode = (int)HttpStatusCode.NotImplemented;
-                    errorResult.Messages.Add("The requested operation is not implemented.");
+                    statusCode = HttpStatusCode.NotImplemented;
+                    messages.Add("The requested operation is not implemented.");
                     break;
 
                 case UnauthorizedAccessException _:
-                    errorResult.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    errorResult.Messages.Add("Access is denied.");
+                    statusCode = HttpStatusCode.Unauthorized;
+                    messages.Add("Access is denied.");
                     break;
 
                 default:
-                    errorResult.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    errorResult.Messages.Add("An unexpected error occurred.");
+                    messages.Add("An unexpected error occurred.");
                     break;
             }
 
-            Log.Error($"{errorResult.Exception} Request failed with Status Code {errorResult.StatusCode}.");
+            Log.Error($"Error: {exception.Message}. Status Code: {statusCode}. {string.Join(" ", messages)}");
 
             var response = context.Response;
-
             response.ContentType = "application/json";
-            response.StatusCode = errorResult.StatusCode;
+            response.StatusCode = (int)statusCode;
 
-            await response.WriteAsync(SerializeObject(errorResult));
-        }
+            var errorResponse = new
+            {
+                success = false,
+                data = (object)null,
+                errors = messages
+            };
 
-        private static string SerializeObject(object obj)
-            => JsonConvert.SerializeObject(obj, new JsonSerializerSettings
+            await response.WriteAsync(JsonConvert.SerializeObject(errorResponse, new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {
                     NamingStrategy = new CamelCaseNamingStrategy(true, true)
                 }
-            });
-
-        private class ErrorResult
-        {
-            public List<string> Messages { get; set; } = new();
-            public string? Exception { get; set; }
-            public int StatusCode { get; set; }
+            }));
         }
     }
 
-    public static class ValidationExceptionHandlerMiddlewareExtensions
+    public static class ErrorHandlerMiddlewareExtensions
     {
-        public static IApplicationBuilder UseValidationExceptionHandler(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder builder)
             => builder.UseMiddleware<ErrorHandlerMiddleware>();
     }
 }

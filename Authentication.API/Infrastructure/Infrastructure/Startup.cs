@@ -1,12 +1,17 @@
 ﻿namespace Infrastructure
 {
+    using System.Net;
     using System.Text;
 
-    using Microsoft.IdentityModel.Tokens;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Identity;
+    using Microsoft.IdentityModel.Tokens;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Serialization;
 
     using MediatR;
 
@@ -17,16 +22,12 @@
     using Domain.Common.Interfaces;
 
     using Infrastructure.Services;
+    using Infrastructure.Identity.Services;
 
     using Persistence.Contexts;
     using Persistence.Constants;
 
     using Models;
-    using Infrastructure.Identity.Services;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Options;
-    using System.Net;
-    using Newtonsoft.Json;
 
     public static class Startup
     {
@@ -106,17 +107,23 @@
                     {
                         OnChallenge = async context =>
                         {
-                            context.HandleResponse(); 
-                            var errorResult = new 
+                            context.HandleResponse();
+                            var errorResponse = new
                             {
-                                StatusCode = (int)HttpStatusCode.Unauthorized,
-                                Messages = new List<string> { "Authentication failed. Access is denied." },
-                                Exception = "Unauthorized Access"
+                                success = false,
+                                data = (object)null,
+                                errors = new List<string> { "Authentication failed. Access is denied.", "Unauthorized Access" }
                             };
                             var response = context.Response;
                             response.ContentType = "application/json";
-                            response.StatusCode = errorResult.StatusCode;
-                            await response.WriteAsync(JsonConvert.SerializeObject(errorResult));
+                            response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            await response.WriteAsync(JsonConvert.SerializeObject(errorResponse, new JsonSerializerSettings
+                            {
+                                ContractResolver = new DefaultContractResolver
+                                {
+                                    NamingStrategy = new CamelCaseNamingStrategy(true, true)
+                                }
+                            }));
                         }
                     };
                 });

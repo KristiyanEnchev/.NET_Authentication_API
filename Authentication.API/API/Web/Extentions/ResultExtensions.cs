@@ -8,30 +8,32 @@
 
     public static class ResultExtensions
     {
-        public static async Task<ActionResult<TData>> ToActionResult<TData>(this Task<Result<TData>> resultTask)
+        public static async Task<ActionResult> ToActionResult<TData>(this Task<Result<TData>> resultTask)
         {
             var result = await resultTask;
 
-            if (!result.Succeeded)
+            var response = new
             {
-                if (result.Exception != null)
+                success = result.Success,
+                data = result.Data,
+                errors = !result.Success ? result.Errors : null
+            };
+
+            if (!result.Success)
+            {
+                if (result.Errors != null)
                 {
-                    return new BadRequestObjectResult(new { error = result.Exception.Message });
+                    return new BadRequestObjectResult(response);
                 }
-                return new BadRequestResult();
+                return new BadRequestObjectResult("Unexpected Error occured");
             }
 
-            if (result.Data == null && result.Messages.Any())
-            {
-                return new OkObjectResult(new { message = result.Messages.FirstOrDefault() });
-            }
             else if (result.Data == null)
             {
                 return new NoContentResult();
             }
 
-            return new OkObjectResult(new { data = result.Data, message = result.Messages.FirstOrDefault() });
+            return new OkObjectResult(response);
         }
-
     }
 }

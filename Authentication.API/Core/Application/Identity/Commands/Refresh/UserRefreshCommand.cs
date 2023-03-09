@@ -8,14 +8,16 @@
     using Application.Interfaces;
     using Application.Identity.Common;
 
-    public class UserRefreshCommand : UserRefreshModel, IRequest<UserResponseModel>
+    using Shared;
+
+    public class UserRefreshCommand : UserRefreshModel, IRequest<Result<UserResponseModel>>
     {
         public UserRefreshCommand(string refreshToken)
             : base(refreshToken)
         {
         }
 
-        public class UserRefreshCommandHandler : IRequestHandler<UserRefreshCommand, UserResponseModel>
+        public class UserRefreshCommandHandler : IRequestHandler<UserRefreshCommand, Result<UserResponseModel>>
         {
             private readonly IIdentity identity;
 
@@ -24,11 +26,11 @@
                 this.identity = identity;
             }
 
-            public async Task<UserResponseModel> Handle(UserRefreshCommand request, CancellationToken cancellationToken)
+            public async Task<Result<UserResponseModel>> Handle(UserRefreshCommand request, CancellationToken cancellationToken)
             {
                 var result = await identity.RefreshTokenAsync(request.RefreshToken);
 
-                return result.Data;
+                return result;
             }
         }
     }

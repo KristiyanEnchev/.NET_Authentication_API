@@ -7,11 +7,10 @@
             Data = data;
         }
 
-        public PaginatedResult(bool succeeded, List<T> data = default, List<string> messages = null, int count = 0, int pageNumber = 1, int pageSize = 10)
+        public PaginatedResult(bool succeeded, List<T> data = default, int count = 0, int pageNumber = 1, int pageSize = 10)
         {
             Data = data;
-            Succeeded = succeeded;
-            Messages = messages;
+            Success = succeeded;
 
             CurrentPage = pageNumber;
             PageSize = pageSize;
@@ -30,7 +29,7 @@
 
         public static PaginatedResult<T> Create(List<T> data, int count, int pageNumber, int pageSize)
         {
-            return new PaginatedResult<T>(true, data, null, count, pageNumber, pageSize);
+            return new PaginatedResult<T>(true, data, count, pageNumber, pageSize);
         }
     }
 }

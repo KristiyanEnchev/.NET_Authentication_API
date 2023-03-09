@@ -66,7 +66,7 @@
 
             user.AddDomainEvent(userRegisteredEvent);
 
-            return Result<string>.Success("Succesfull Registration !");
+            return Result<string>.SuccessResult("Succesfull Registration !");
         }
 
         public async Task<Result<UserResponseModel>> Login(UserRequestModel userRequest)
@@ -87,7 +87,7 @@
 
             var tokenResult = await jwtGenerator.GenerateToken(user);
 
-            return Result<UserResponseModel>.Success(tokenResult);
+            return Result<UserResponseModel>.SuccessResult(tokenResult);
         }
 
         public async Task<Result<UserResponseModel>> RefreshTokenAsync(string refreshToken)
@@ -96,10 +96,10 @@
 
             var tokenResult = await jwtGenerator.GenerateToken(user);
 
-            return Result<UserResponseModel>.Success(tokenResult);
+            return Result<UserResponseModel>.SuccessResult(tokenResult);
         }
 
-        public async Task<Result<bool>> LogoutAsync(string userEmail)
+        public async Task<Result<string>> LogoutAsync(string userEmail)
         {
             var user = await userManager.FindByEmailAsync(userEmail);
 
@@ -110,7 +110,7 @@
 
             await signInManager.SignOutAsync();
 
-            return Result<bool>.Success();
+            return Result<string>.SuccessResult("Succesfull Logout !");
         }
     }
 }
