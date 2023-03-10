@@ -12,6 +12,7 @@
     using Application.Identity.Commands.Register;
     using Application.Identity.Commands.Refresh;
     using Application.Identity.Commands.Logout;
+
     using Shared;
 
     public class IdentityController : ApiController
@@ -27,16 +28,16 @@
         [HttpPost(nameof(Login))]
         [AllowAnonymous]
         [SwaggerOperation("Request an access token using credentials.", "")]
-        public async Task<ActionResult<UserResponseModel>> Login(UserLoginCommand request)
+        public async Task<ActionResult<Result<UserResponseModel>>> Login(UserLoginCommand request)
         {
-            return await Mediator.Send(request);
+            return await Mediator.Send(request).ToActionResult();
         }
 
         [HttpPost(nameof(Refresh))]
         [SwaggerOperation("Request an access token using a refresh token.", "")]
-        public async Task<ActionResult<UserResponseModel>> Refresh(UserRefreshCommand request)
+        public async Task<ActionResult<Result<UserResponseModel>>> Refresh(UserRefreshCommand request)
         {
-            return await Mediator.Send(request);
+            return await Mediator.Send(request).ToActionResult();
         }
 
         [HttpPost(nameof(Logout))]
