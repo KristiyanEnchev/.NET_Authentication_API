@@ -1,4 +1,4 @@
-﻿namespace Web.Extensions.Middleware
+﻿namespace Web.Extentions.Middleware
 {
     using System;
     using System.Net;
@@ -50,7 +50,7 @@
                     break;
 
                 case CustomException customException:
-                    statusCode = (HttpStatusCode)customException.StatusCode;
+                    statusCode = customException.StatusCode;
                     messages.AddRange(customException.ErrorMessages ?? new List<string> { customException.Message });
                     break;
 

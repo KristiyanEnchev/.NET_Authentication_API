@@ -1,4 +1,4 @@
-﻿namespace Application.Identity.Commands.Logout
+﻿namespace Application.Handlers.Identity.Commands.Logout
 {
     using System.Threading;
     using System.Threading.Tasks;
@@ -6,8 +6,8 @@
     using MediatR;
 
     using Application.Interfaces;
-    using Application.Identity.Common;
     using Shared;
+    using Application.Handlers.Identity.Common;
 
     public class UserLogoutCommand : UserLogoutModel, IRequest<Result<string>>
     {

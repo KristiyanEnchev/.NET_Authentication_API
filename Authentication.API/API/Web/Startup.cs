@@ -12,12 +12,12 @@
 
     using Web.Services;
     using Web.Extentions.Swagger;
-    using Web.Extensions.Middleware;
 
     using Infrastructure;
 
     using Persistence;
     using Persistence.Contexts;
+    using Web.Extentions.Middleware;
 
     public static class Startup
     {

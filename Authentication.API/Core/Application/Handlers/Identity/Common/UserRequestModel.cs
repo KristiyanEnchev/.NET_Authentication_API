@@ -1,4 +1,4 @@
-﻿namespace Application.Identity.Common
+﻿namespace Application.Handlers.Identity.Common
 {
     public abstract class UserRequestModel
     {

@@ -7,13 +7,12 @@
 
     using Web.Extentions;
 
-    using Application.Identity.Common;
-    using Application.Identity.Commands.Login;
-    using Application.Identity.Commands.Register;
-    using Application.Identity.Commands.Refresh;
-    using Application.Identity.Commands.Logout;
-
     using Shared;
+    using Application.Handlers.Identity.Common;
+    using Application.Handlers.Identity.Commands.Login;
+    using Application.Handlers.Identity.Commands.Logout;
+    using Application.Handlers.Identity.Commands.Refresh;
+    using Application.Handlers.Identity.Commands.Register;
 
     public class IdentityController : ApiController
     {

@@ -1,4 +1,4 @@
-﻿namespace Application.Identity.Commands.Refresh
+﻿namespace Application.Handlers.Identity.Commands.Refresh
 {
     using System.Threading;
     using System.Threading.Tasks;
@@ -6,9 +6,9 @@
     using MediatR;
 
     using Application.Interfaces;
-    using Application.Identity.Common;
 
     using Shared;
+    using Application.Handlers.Identity.Common;
 
     public class UserRefreshCommand : UserRefreshModel, IRequest<Result<UserResponseModel>>
     {

@@ -12,8 +12,8 @@
     using Shared.Exceptions;
 
     using Application.Interfaces;
-    using Application.Identity.Commands.Register;
-    using Application.Identity.Common;
+    using Application.Handlers.Identity.Common;
+    using Application.Handlers.Identity.Commands.Register;
 
     internal class IdentityService : IIdentity
     {

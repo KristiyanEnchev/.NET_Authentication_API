@@ -1,10 +1,8 @@
 ﻿namespace Application.Interfaces
 {
     using System.Threading.Tasks;
-
-    using Application.Identity.Commands.Register;
-    using Application.Identity.Common;
-
+    using Application.Handlers.Identity.Commands.Register;
+    using Application.Handlers.Identity.Common;
     using Shared;
 
     public interface IIdentity

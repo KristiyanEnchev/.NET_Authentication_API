@@ -1,9 +1,7 @@
 ﻿namespace Infrastructure.Identity.Services
 {
     using System.Threading.Tasks;
-
-    using Application.Identity.Common;
-
+    using Application.Handlers.Identity.Common;
     using Domain.Entities.Identity;
 
     public interface IJwtGenerator

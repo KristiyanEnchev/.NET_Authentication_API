@@ -1,4 +1,4 @@
-﻿namespace Application.Identity.Commands.Register
+﻿namespace Application.Handlers.Identity.Commands.Register
 {
     using System.Threading;
     using System.Threading.Tasks;

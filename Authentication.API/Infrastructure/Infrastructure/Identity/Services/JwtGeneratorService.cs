@@ -12,13 +12,13 @@
     using Domain.Entities.Identity;
 
     using Application.Interfaces;
-    using Application.Identity.Common;
 
     using Persistence.Constants;
 
     using Models;
 
     using Shared.Exceptions;
+    using Application.Handlers.Identity.Common;
 
     internal class JwtGeneratorService : IJwtGenerator
     {
