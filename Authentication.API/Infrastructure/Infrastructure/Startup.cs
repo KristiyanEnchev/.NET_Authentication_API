@@ -23,6 +23,7 @@
 
     using Infrastructure.Services;
     using Infrastructure.Identity.Services;
+    using Infrastructure.Account.Services;
 
     using Persistence.Contexts;
     using Persistence.Constants;
@@ -48,7 +49,8 @@
             services
                 .AddTransient<IMediator, Mediator>()
                 .AddTransient<IDomainEventDispatcher, DomainEventDispatcher>()
-                .AddTransient<IDateTimeService, DateTimeService>();
+                .AddTransient<IDateTimeService, DateTimeService>()
+                .AddTransient<IUserService, UserService>();
 
             return services;
         }

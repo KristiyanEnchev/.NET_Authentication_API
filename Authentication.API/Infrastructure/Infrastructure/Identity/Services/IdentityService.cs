@@ -46,6 +46,8 @@
                 Email = userRequest.Email,
                 UserName = userRequest.Email,
                 IsActive = true,
+                CreatedBy = "Registration",
+                CreatedDate = DateTime.UtcNow,
             };
 
             var identityResult = await userManager.CreateAsync(

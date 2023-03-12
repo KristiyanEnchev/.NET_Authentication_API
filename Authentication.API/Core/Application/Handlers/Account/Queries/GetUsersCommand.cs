@@ -2,21 +2,27 @@
 {
     using MediatR;
 
+    using Application.Interfaces;
     using Application.Handlers.Account.Common;
 
     using Shared;
 
-    public class GetUsersQuery : UserRequestGetModel, IRequest<Result<UserResponseGetModel>>
+    public class GetUsersQuery : UserRequestGetModel, IRequest<Result<List<UserResponseGetModel>>>
     {
-        public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<UserResponseGetModel>>
+        public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<List<UserResponseGetModel>>>
         {
-            public GetUsersQueryHandler()
+            private readonly IUserService userService;
+
+            public GetUsersQueryHandler(IUserService userService)
             {
+                this.userService = userService;
             }
 
-            public async Task<Result<UserResponseGetModel>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
+            public async Task<Result<List<UserResponseGetModel>>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
             {
-                return null;
+                var result = await userService.GetListAsync(cancellationToken);
+
+                return result;
             }
         }
     }

@@ -6,19 +6,20 @@
     using Swashbuckle.AspNetCore.Annotations;
 
     using Application.Handlers.Account.Queries;
-    using Application.Handlers.Account.Common;
 
-    using Shared;
+    using Web.Extentions;
 
     public class AccountController : ApiController
     {
-        [HttpPost(nameof(GetUsers))]
         [AllowAnonymous]
+        //[Authorize]
+        //[Authorize(Roles = "Admin")]
+        [HttpGet(nameof(GetUsers))]
         [SwaggerOperation("Get All Users.", "")]
 
-        public async Task<ActionResult<Result<UserResponseGetModel>>> GetUsers(GetUsersQuery request)
+        public async Task<IActionResult> GetUsers()
         {
-            return await Mediator.Send(request).ToActionResult();
+            return await Mediator.Send(new GetUsersQuery()).ToActionResult();
         }
     }
 }
