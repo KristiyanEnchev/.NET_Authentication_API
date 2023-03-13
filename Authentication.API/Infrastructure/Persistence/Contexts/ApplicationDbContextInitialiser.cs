@@ -9,6 +9,7 @@
     using Persistence.Constants;
 
     using Domain.Entities.Identity;
+    using System.Data;
 
     public static class InitialiserExtensions
     {
@@ -74,7 +75,16 @@
                 await _roleManager.CreateAsync(administratorRole);
             }
 
-            var administrator = new User { UserName = "admin@admin.com", Email = "admin@admin.com", IsActive = true};
+            var administrator = new User 
+            {
+                UserName = "admin@admin.com",
+                FirstName = "Super",
+                LastName = "Admin",
+                Email = "admin@admin.com",
+                IsActive = true,
+                CreatedBy = "Initial Seed",
+                CreatedDate = DateTime.UtcNow,
+            };
 
             if (_userManager.Users.All(u => u.UserName != administrator.UserName))
             {

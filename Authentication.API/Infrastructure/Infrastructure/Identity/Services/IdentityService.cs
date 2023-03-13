@@ -14,6 +14,7 @@
     using Application.Interfaces;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Register;
+    using Persistence.Constants;
 
     internal class IdentityService : IIdentity
     {
@@ -60,6 +61,8 @@
 
                 throw new CustomException("Something went wrond when trying to create the user !", errors.ToList(), System.Net.HttpStatusCode.BadRequest);
             }
+
+            await userManager.AddToRoleAsync(user, "User");
 
             var userRegisteredEvent = new UserRegisteredEvent(
                 user.Id,
