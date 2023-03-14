@@ -14,7 +14,6 @@
     using Application.Interfaces;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Register;
-    using Persistence.Constants;
 
     internal class IdentityService : IIdentity
     {
@@ -23,21 +22,23 @@
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
         private readonly IJwtGenerator jwtGenerator;
+        private readonly ITransactionHelper transactionHelper;
 
-        public IdentityService(UserManager<User> userManager, IJwtGenerator jwtGenerator, SignInManager<User> signInManager)
+        public IdentityService(UserManager<User> userManager, IJwtGenerator jwtGenerator, SignInManager<User> signInManager, ITransactionHelper transactionHelper)
         {
             this.userManager = userManager;
             this.jwtGenerator = jwtGenerator;
             this.signInManager = signInManager;
+            this.transactionHelper = transactionHelper;
         }
 
         public async Task<Result<string>> Register(UserRegisterRequestModel userRequest)
         {
-            var checkForEmailExist = await userManager.FindByEmailAsync(userRequest.Email);
+            var userExists = await userManager.FindByEmailAsync(userRequest.Email);
 
-            if (checkForEmailExist != null)
+            if (userExists != null)
             {
-                throw new CustomException("Email already in use!", null, System.Net.HttpStatusCode.Conflict);
+                return Result<string>.Failure("Email already in use.");
             }
 
             var user = new User()
@@ -51,18 +52,26 @@
                 CreatedDate = DateTime.UtcNow,
             };
 
-            var identityResult = await userManager.CreateAsync(
-                user,
-                userRequest.Password);
-
-            if (!identityResult.Succeeded)
+            using (var transaction = await transactionHelper.BeginTransactionAsync())
             {
-                var errors = identityResult.Errors.Select(e => e.Description);
+                var createUserResult = await userManager.CreateAsync(user, userRequest.Password);
+                if (!createUserResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    var errors = createUserResult.Errors.Select(e => e.Description).ToList();
+                    return Result<string>.Failure(errors);
+                }
 
-                throw new CustomException("Something went wrond when trying to create the user !", errors.ToList(), System.Net.HttpStatusCode.BadRequest);
+                var addToRoleResult = await userManager.AddToRoleAsync(user, "User");
+                if (!addToRoleResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    var errors = addToRoleResult.Errors.Select(e => e.Description).ToList();
+                    return Result<string>.Failure(errors);
+                }
+
+                await transaction.CommitAsync();
             }
-
-            await userManager.AddToRoleAsync(user, "User");
 
             var userRegisteredEvent = new UserRegisteredEvent(
                 user.Id,

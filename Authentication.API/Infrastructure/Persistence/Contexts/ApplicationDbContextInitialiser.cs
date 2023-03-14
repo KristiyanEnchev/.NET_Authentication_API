@@ -69,10 +69,16 @@
         public async Task TrySeedAsync()
         {
             var administratorRole = new UserRole(Roles.Administrator);
+            var userRole = new UserRole(Roles.User);
 
             if (_roleManager.Roles.All(r => r.Name != administratorRole.Name))
             {
                 await _roleManager.CreateAsync(administratorRole);
+            }
+
+            if (_roleManager.Roles.All(r => r.Name != userRole.Name))
+            {
+                await _roleManager.CreateAsync(userRole);
             }
 
             var administrator = new User 

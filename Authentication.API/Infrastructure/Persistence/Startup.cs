@@ -8,6 +8,7 @@
     using Persistence.Repositories;
 
     using Application.Interfaces.Repositories;
+    using Application.Interfaces;
 
     public static class Startup
     {
@@ -28,6 +29,7 @@
                    builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
             services.AddScoped<ApplicationDbContextInitialiser>();
+            services.AddScoped<ITransactionHelper, TransactionHelper>();
         }
         private static void AddRepositories(this IServiceCollection services)
         {

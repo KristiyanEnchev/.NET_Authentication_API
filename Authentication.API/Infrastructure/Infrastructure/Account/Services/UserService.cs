@@ -12,40 +12,36 @@
 
     using Application.Handlers.Account.Common;
     using Application.Interfaces;
-    using Persistence.Constants;
 
     public class UserService : IUserService
     {
         private readonly UserManager<User> userManager;
         private readonly IMapper _mapper;
+        private readonly ITransactionHelper _transactionHelper;
 
-
-        public UserService(UserManager<User> userManager, IMapper mapper)
+        public UserService(UserManager<User> userManager, IMapper mapper, ITransactionHelper transactionHelper)
         {
             this.userManager = userManager;
             _mapper = mapper;
+            _transactionHelper = transactionHelper;
         }
 
         public async Task<Result<List<UserResponseGetModel>>> GetListAsync(CancellationToken cancellationToken)
         {
             var users = await userManager.Users
                 .AsNoTracking()
+                .ProjectTo<UserResponseGetModel>(_mapper.ConfigurationProvider) 
                 .ToListAsync(cancellationToken);
 
-            var userResponses = new List<UserResponseGetModel>();
-
-            foreach (var user in users)
+            foreach (var userResponse in users)
             {
+                var user = await userManager.FindByIdAsync(userResponse.Id);
                 var roles = await userManager.GetRolesAsync(user);
                 var role = roles.FirstOrDefault();
-
-                var userResponse = _mapper.Map<UserResponseGetModel>(user);
                 userResponse.Role = role; 
-
-                userResponses.Add(userResponse);
             }
 
-            return Result<List<UserResponseGetModel>>.SuccessResult(userResponses);
+            return Result<List<UserResponseGetModel>>.SuccessResult(users);
         }
     }
 }
