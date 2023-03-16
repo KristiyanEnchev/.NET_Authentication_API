@@ -12,6 +12,8 @@
 
     using Application.Handlers.Account.Common;
     using Application.Interfaces;
+    using Application.Common;
+    using Application.Extensions;
 
     public class UserService : IUserService
     {
@@ -42,6 +44,32 @@
             }
 
             return Result<List<UserResponseGetModel>>.SuccessResult(users);
+        }
+
+        public async Task<PaginatedResult<UserResponseGetModel>> GetPagedListAsync(
+            int pageNumber,
+            int pageSize,
+            string sortBy,
+            string order,
+            CancellationToken cancellationToken)
+        {
+            var sortOrder = new UserSortOrder(sortBy, order);
+
+            var paginatedAndSortedUsers = await userManager.Users
+                .AsNoTracking()
+                .Sort(sortOrder)
+                .ProjectTo<UserResponseGetModel>(_mapper.ConfigurationProvider)
+                .ToPaginatedListAsync(pageNumber, pageSize, cancellationToken);
+
+            foreach (var userResponse in paginatedAndSortedUsers.Data)
+            {
+                var user = await userManager.FindByIdAsync(userResponse.Id);
+                var roles = await userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault();
+                userResponse.Role = role;
+            }
+
+            return paginatedAndSortedUsers;
         }
     }
 }
