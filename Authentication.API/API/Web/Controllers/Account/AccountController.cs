@@ -14,7 +14,7 @@
 
     using Shared;
 
-    using static Application.Handlers.Account.Queries.GetUsersPagedQuery;
+    using Models.Enums;
 
     public class AccountController : ApiController
     {

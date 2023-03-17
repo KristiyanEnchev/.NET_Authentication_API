@@ -7,6 +7,8 @@
 
     using Shared;
 
+    using Models.Enums;
+
     public class GetUsersPagedQuery : IRequest<PaginatedResult<UserResponseGetModel>>
     {
         public int PageNumber { get; init; } = 1;
@@ -42,20 +44,6 @@
 
                 return result;
             }
-        }
-
-        public enum Sort
-        {
-            asc,
-            desc,
-        }
-
-        public enum SortBy
-        {
-            Id,
-            Email,
-            FirstName,
-            LastName,
         }
     }
 }

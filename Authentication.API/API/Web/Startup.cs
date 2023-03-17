@@ -24,7 +24,10 @@
         public static IServiceCollection AddWeb(this IServiceCollection services, IConfiguration config)
         {
             services.AddHttpContextAccessor();
-            services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+            services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly()).AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+            });
 
             services.AddApplication();
             services.AddInfrastructure(config);
