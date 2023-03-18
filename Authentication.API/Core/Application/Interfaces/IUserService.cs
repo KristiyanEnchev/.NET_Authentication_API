@@ -13,5 +13,8 @@
             string sortBy,
             string order,
             CancellationToken cancellationToken);
+
+        Task<Result<UserResponseGetModel>> GetByIdAsync(string userId, CancellationToken cancellationToken);
+        Task<Result<UserResponseGetModel>> GetByEmailAsync(string userId, CancellationToken cancellationToken);
     }
 }

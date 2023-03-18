@@ -12,7 +12,6 @@
 
     using Application.Handlers.Account.Common;
     using Application.Interfaces;
-    using Application.Common;
     using Application.Extensions;
 
     public class UserService : IUserService
@@ -70,6 +69,38 @@
             }
 
             return paginatedAndSortedUsers;
+        }
+
+        public async Task<Result<UserResponseGetModel>> GetByIdAsync(string userId, CancellationToken cancellationToken)
+        {
+            var user = await userManager.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .ProjectTo<UserResponseGetModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (user == null)
+            {
+                return Result<UserResponseGetModel>.Failure("User Not Found.");
+            }
+
+            return Result<UserResponseGetModel>.SuccessResult(user);
+        }
+
+        public async Task<Result<UserResponseGetModel>> GetByEmailAsync(string email, CancellationToken cancellationToken)
+        {
+            var user = await userManager.Users
+                .AsNoTracking()
+                .Where(u => u.Email == email)
+                .ProjectTo<UserResponseGetModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (user == null)
+            {
+                return Result<UserResponseGetModel>.Failure("User Not Found.");
+            }
+
+            return Result<UserResponseGetModel>.SuccessResult(user);
         }
     }
 }
