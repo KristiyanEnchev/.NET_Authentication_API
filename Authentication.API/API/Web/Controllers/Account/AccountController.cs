@@ -33,5 +33,13 @@
         {
             return await Mediator.Send(new GetUsersPagedQuery(pageNumber, pageSize, sortBy, order));
         }
+
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpGet(nameof(GetBy))]
+        [SwaggerOperation("Get User By.", "")]
+        public async Task<IActionResult> GetBy(FindBy findBy, string value)
+        {
+            return await Mediator.Send(new GetUserQuery(findBy, value)).ToActionResult();
+        }
     }
 }
