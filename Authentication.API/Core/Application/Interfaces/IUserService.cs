@@ -2,6 +2,8 @@
 {
     using Application.Handlers.Account.Common;
 
+    using Models.Enums;
+
     using Shared;
 
     public interface IUserService
@@ -16,5 +18,6 @@
 
         Task<Result<UserResponseGetModel>> GetByIdAsync(string userId, CancellationToken cancellationToken);
         Task<Result<UserResponseGetModel>> GetByEmailAsync(string userId, CancellationToken cancellationToken);
+        Task<Result<string>> ToggleStatusAsync(string value, ToggleUserValue toggleValue, bool activate, CancellationToken cancellationToken);
     }
 }

@@ -112,7 +112,7 @@
         {
             using (var transaction = await _transactionHelper.BeginTransactionAsync())
             {
-                var user = await userManager.FindByEmailAsync(value) ?? await userManager.Findle status ByIdAsync(value);
+                var user = await userManager.FindByEmailAsync(value) ?? await userManager.FindByIdAsync(value);
 
                 if (user == null)
                 {
