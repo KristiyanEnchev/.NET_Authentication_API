@@ -10,15 +10,13 @@
 
     public class ToggleStatusCommand : IRequest<Result<string>>
     {
-        public string Value { get; set; }
+        public string Identifier { get; set; }
         public ToggleUserValue ToggleValue { get; set; }
-        public bool ToggleTo { get; set; }
 
-        public ToggleStatusCommand(string value, ToggleUserValue toggleUserValue, bool toggleTo)
+        public ToggleStatusCommand(string value, ToggleUserValue toggleUserValue)
         {
-            this.Value = value;
+            this.Identifier = value;
             this.ToggleValue = toggleUserValue;
-            this.ToggleTo = toggleTo;
         }
 
         public class ToggleStatusCommandHandler : IRequestHandler<ToggleStatusCommand, Result<string>>
@@ -32,7 +30,7 @@
 
             public async Task<Result<string>> Handle(ToggleStatusCommand request, CancellationToken cancellationToken)
             {
-                var result = await userService.ToggleStatusAsync(request.Value, request.ToggleValue, request.ToggleTo, cancellationToken);
+                var result = await userService.ToggleStatusAsync(request.Identifier, request.ToggleValue);
 
                 return result;
             }

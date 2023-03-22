@@ -108,46 +108,43 @@
             return Result<UserResponseGetModel>.SuccessResult(user);
         }
 
-        public async Task<Result<string>> ToggleStatusAsync(string value, ToggleUserValue toggleValue, bool activate, CancellationToken cancellationToken)
+        public async Task<Result<string>> ToggleStatusAsync(string value, ToggleUserValue toggleValue)
         {
             using (var transaction = await _transactionHelper.BeginTransactionAsync())
             {
                 var user = await userManager.FindByEmailAsync(value) ?? await userManager.FindByIdAsync(value);
-
                 if (user == null)
                 {
                     return Result<string>.Failure("User not found.");
                 }
 
                 var changes = new List<string>();
+                string propertyChanged = string.Empty;
+                bool newValue = false;
+
                 switch (toggleValue)
                 {
                     case ToggleUserValue.IsActive:
-                        if (user.IsActive != activate)
-                        {
-                            user.IsActive = activate;
-                            changes.Add(nameof(user.IsActive));
-                        }
+                        user.IsActive = !user.IsActive;
+                        propertyChanged = nameof(user.IsActive);
+                        newValue = user.IsActive;
                         break;
                     case ToggleUserValue.IsEmailConfirmed:
-                        if (user.EmailConfirmed != activate)
-                        {
-                            user.EmailConfirmed = activate;
-                            changes.Add(nameof(user.EmailConfirmed));
-                        }
+                        user.EmailConfirmed = !user.EmailConfirmed;
+                        propertyChanged = nameof(user.EmailConfirmed);
+                        newValue = user.EmailConfirmed;
                         break;
                     case ToggleUserValue.IsLockedOut:
-                        if (user.LockoutEnabled != activate)
-                        {
-                            user.LockoutEnabled = activate;
-                            changes.Add(nameof(user.LockoutEnabled));
-                        }
+                        user.LockoutEnabled = !user.LockoutEnabled;
+                        propertyChanged = nameof(user.LockoutEnabled);
+                        newValue = user.LockoutEnabled;
                         break;
                 }
 
-                if (changes.Any())
+                if (!string.IsNullOrEmpty(propertyChanged))
                 {
-                    var userToggleEvent = new UserToggleEvent(user.IsActive, user.EmailConfirmed, user.LockoutEnd.HasValue, changes);
+                    changes.Add(propertyChanged);
+                    var userToggleEvent = new UserToggleEvent(user.IsActive, user.EmailConfirmed, user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow, changes);
                     user.AddDomainEvent(userToggleEvent);
                 }
 
@@ -159,7 +156,7 @@
                 }
 
                 await transaction.CommitAsync();
-                return Result<string>.SuccessResult($"User status updated to: {activate}");
+                return Result<string>.SuccessResult($"{propertyChanged} toggled to {newValue}.");
             }
         }
     }
