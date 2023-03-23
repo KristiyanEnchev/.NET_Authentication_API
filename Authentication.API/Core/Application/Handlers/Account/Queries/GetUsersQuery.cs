@@ -7,7 +7,7 @@
 
     using Shared;
 
-    public class GetUsersQuery : UserRequestGetModel, IRequest<Result<List<UserResponseGetModel>>>
+    public class GetUsersQuery : IRequest<Result<List<UserResponseGetModel>>>
     {
         public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<List<UserResponseGetModel>>>
         {
