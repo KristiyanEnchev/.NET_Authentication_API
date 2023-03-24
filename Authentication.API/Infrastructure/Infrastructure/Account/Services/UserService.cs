@@ -18,6 +18,7 @@
     using MediatR;
     using Domain.Events;
     using Persistence.Contexts;
+    using Application.Handlers.Identity.Common;
 
     public class UserService : IUserService
     {
@@ -158,6 +159,17 @@
                 await transaction.CommitAsync();
                 return Result<string>.SuccessResult($"{propertyChanged} toggled to {newValue}.");
             }
+        }
+
+        public async Task<Result<UserResponseModel>> UpdateUserData(
+            string id,
+            string firstName,
+            string lastName,
+            string userName,
+            string email,
+            CancellationToken cancellationToken) 
+        {
+
         }
     }
 }
