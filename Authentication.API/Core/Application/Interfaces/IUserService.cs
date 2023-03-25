@@ -1,9 +1,8 @@
 ﻿namespace Application.Interfaces
 {
     using Application.Handlers.Account.Common;
-
+    using Application.Handlers.Identity.Common;
     using Models.Enums;
-
     using Shared;
 
     public interface IUserService
@@ -19,5 +18,12 @@
         Task<Result<UserResponseGetModel>> GetByIdAsync(string userId, CancellationToken cancellationToken);
         Task<Result<UserResponseGetModel>> GetByEmailAsync(string userId, CancellationToken cancellationToken);
         Task<Result<string>> ToggleStatusAsync(string value, ToggleUserValue toggleValue);
+        Task<Result<UserResponseGetModel>> UpdateUserData(
+            string id,
+            string firstName,
+            string lastName,
+            string userName,
+            string email,
+            CancellationToken cancellationToken);
     }
 }

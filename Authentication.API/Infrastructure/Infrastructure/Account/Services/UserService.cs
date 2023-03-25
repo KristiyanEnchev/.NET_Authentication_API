@@ -6,31 +6,31 @@
     using AutoMapper;
     using AutoMapper.QueryableExtensions;
 
+    using Domain.Events;
     using Domain.Entities.Identity;
 
     using Shared;
 
-    using Application.Handlers.Account.Common;
     using Application.Interfaces;
     using Application.Extensions;
-    using Persistence.Constants;
-    using Models.Enums;
-    using MediatR;
-    using Domain.Events;
-    using Persistence.Contexts;
+    using Application.Handlers.Account.Common;
     using Application.Handlers.Identity.Common;
+
+    using Models.Enums;
 
     public class UserService : IUserService
     {
         private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
         private readonly IMapper _mapper;
         private readonly ITransactionHelper _transactionHelper;
 
-        public UserService(UserManager<User> userManager, IMapper mapper, ITransactionHelper transactionHelper)
+        public UserService(UserManager<User> userManager, IMapper mapper, ITransactionHelper transactionHelper, SignInManager<User> signInManager)
         {
             this.userManager = userManager;
             _mapper = mapper;
             _transactionHelper = transactionHelper;
+            this.signInManager = signInManager;
         }
 
         public async Task<Result<List<UserResponseGetModel>>> GetListAsync(CancellationToken cancellationToken)
@@ -161,15 +161,120 @@
             }
         }
 
-        public async Task<Result<UserResponseModel>> UpdateUserData(
+        public async Task<Result<UserResponseGetModel>> UpdateUserData(
             string id,
             string firstName,
             string lastName,
             string userName,
             string email,
-            CancellationToken cancellationToken) 
+            CancellationToken cancellationToken)
         {
+            using (var transaction = await _transactionHelper.BeginTransactionAsync())
+            {
+                var user = await userManager.FindByIdAsync(id);
+                if (user == null)
+                {
+                    return Result<UserResponseGetModel>.Failure("User not found.");
+                }
 
+                var changedProperties = new List<string>();
+
+                if (user.FirstName != firstName)
+                {
+                    user.FirstName = firstName;
+                    changedProperties.Add(nameof(user.FirstName));
+                }
+                if (user.LastName != lastName)
+                {
+                    user.LastName = lastName;
+                    changedProperties.Add(nameof(user.LastName));
+                }
+                if (user.UserName != userName)
+                {
+                    user.UserName = userName;
+                    changedProperties.Add(nameof(user.UserName));
+                }
+                if (user.Email != email)
+                {
+                    user.Email = email;
+                    changedProperties.Add(nameof(user.Email));
+                }
+
+                if (!changedProperties.Any())
+                {
+                    var currentUser = _mapper.Map<UserResponseGetModel>(user);
+                    return Result<UserResponseGetModel>.SuccessResult(currentUser);
+                }
+
+                var result = await userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    return Result<UserResponseGetModel>.Failure(result.Errors.Select(e => e.Description).ToList());
+                }
+
+                await signInManager.RefreshSignInAsync(user);
+
+                user.AddDomainEvent(new ApplicationUserUpdatedEvent(user.Id, changedProperties));
+
+                await transaction.CommitAsync();
+
+                var updatedUser = _mapper.Map<UserResponseGetModel>(user);
+                return Result<UserResponseGetModel>.SuccessResult(updatedUser);
+            }
         }
+
+
+        //// Potential dynamic update of properties allowing extention of the properties for update more easy without adding code,
+        //// rather just adding the property itself 
+
+        //public async Task<Result<UserResponseGetModel>> UpdateUserData(string userId, UserUpdateRequest updateRequest, CancellationToken cancellationToken)
+        //{
+        //    using (var transaction = await _transactionHelper.BeginTransactionAsync())
+        //    {
+        //        var user = await userManager.FindByIdAsync(userId);
+        //        if (user == null)
+        //        {
+        //            return Result<UserResponseGetModel>.Failure("User not found.");
+        //        }
+
+        //        var changedProperties = new List<string>();
+        //        var userProperties = user.GetType().GetProperties();
+        //        foreach (var property in typeof(UserUpdateRequest).GetProperties())
+        //        {
+        //            var userProperty = userProperties.FirstOrDefault(p => p.Name == property.Name);
+        //            if (userProperty != null)
+        //            {
+        //                var currentValue = userProperty.GetValue(user);
+        //                var newValue = property.GetValue(updateRequest);
+
+        //                if (currentValue != null && !currentValue.Equals(newValue))
+        //                {
+        //                    userProperty.SetValue(user, newValue);
+        //                    changedProperties.Add(property.Name);
+        //                }
+        //            }
+        //        }
+
+        //        if (!changedProperties.Any())
+        //        {
+        //            var currentUser = _mapper.Map<UserResponseGetModel>(user);
+        //            return Result<UserResponseGetModel>.SuccessResult(currentUser);
+        //        }
+
+        //        var result = await userManager.UpdateAsync(user);
+        //        if (!result.Succeeded)
+        //        {
+        //            await transaction.RollbackAsync();
+        //            return Result<UserResponseGetModel>.Failure(result.Errors.Select(e => e.Description).ToList());
+        //        }
+
+        //        user.AddDomainEvent(new ApplicationUserUpdatedEvent(user.Id, changedProperties));
+        //        await transaction.CommitAsync();
+
+        //        var updatedUser = _mapper.Map<UserResponseGetModel>(user);
+        //        return Result<UserResponseGetModel>.SuccessResult(updatedUser);
+        //    }
+        //}
     }
 }

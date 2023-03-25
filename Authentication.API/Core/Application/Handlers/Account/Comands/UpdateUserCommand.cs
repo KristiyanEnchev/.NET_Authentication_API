@@ -4,13 +4,12 @@
 
     using Application.Interfaces;
     using Application.Handlers.Account.Common;
-    using Application.Handlers.Identity.Common;
 
     using Shared;
 
-    public class UpdateUserCommand : UserUpdateRequestModel, IRequest<Result<UserResponseModel>>
+    public class UpdateUserCommand : UserUpdateRequestModel, IRequest<Result<UserResponseGetModel>>
     {
-        public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result<UserResponseModel>>
+        public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result<UserResponseGetModel>>
         {
             private readonly IUserService _userService;
 
@@ -19,9 +18,17 @@
                 _userService = userService;
             }
 
-            public async Task<Result<UserResponseModel>> Handle(UpdateUserCommand request, CancellationToken cancellationToken) 
+            public async Task<Result<UserResponseGetModel>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
             {
+                var result = await _userService.UpdateUserData(
+                    request.Id!,
+                    request.FirstName!,
+                    request.LastName!,
+                    request.UserName!,
+                    request.Email!,
+                    cancellationToken);
 
+                return result;
             }
         }
     }
