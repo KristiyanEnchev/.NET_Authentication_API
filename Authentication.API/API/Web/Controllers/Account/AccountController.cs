@@ -17,38 +17,42 @@
 
     using Models.Enums;
 
+    [Authorize(Roles = Roles.Administrator)]
     public class AccountController : ApiController
     {
-        [Authorize(Roles = Roles.Administrator)]
-        [HttpGet(nameof(GetUsers))]
+        [HttpGet(nameof(Users))]
         [SwaggerOperation("Get All Users.", "")]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> Users()
         {
             return await Mediator.Send(new GetUsersQuery()).ToActionResult();
         }
 
-        [Authorize(Roles = Roles.Administrator)]
-        [HttpGet(nameof(GetUsersPaged))]
+        [HttpGet(nameof(PagedUsers))]
         [SwaggerOperation("Get All Users.", "")]
-        public async Task<PaginatedResult<UserResponseGetModel>> GetUsersPaged(int pageNumber, int pageSize, SortBy sortBy, Sort order)
+        public async Task<PaginatedResult<UserResponseGetModel>> PagedUsers(int pageNumber, int pageSize, SortBy sortBy, Sort order)
         {
             return await Mediator.Send(new GetUsersPagedQuery(pageNumber, pageSize, sortBy, order));
         }
 
-        [Authorize(Roles = Roles.Administrator)]
-        [HttpGet(nameof(GetBy))]
+        [HttpGet(nameof(UserBy))]
         [SwaggerOperation("Get User By.", "")]
-        public async Task<IActionResult> GetBy(FindBy findBy, string value)
+        public async Task<IActionResult> UserBy(FindBy findBy, string value)
         {
             return await Mediator.Send(new GetUserQuery(findBy, value)).ToActionResult();
         }
 
-        [Authorize(Roles = Roles.Administrator)]
         [HttpPost(nameof(ToggleStatus))]
         [SwaggerOperation("Toggle user status.", "")]
-        public async Task<IActionResult> ToggleStatus(string identifier , [FromQuery]ToggleUserValue toggleValiue)
+        public async Task<IActionResult> ToggleStatus(string identifier, [FromQuery] ToggleUserValue toggleValiue)
         {
             return await Mediator.Send(new ToggleStatusCommand(identifier, toggleValiue)).ToActionResult();
+        }
+
+        [HttpPost(nameof(Update))]
+        [SwaggerOperation("Toggle user status.", "")]
+        public async Task<IActionResult> Update(UpdateUserCommand request)
+        {
+            return await Mediator.Send(request).ToActionResult();
         }
     }
 }

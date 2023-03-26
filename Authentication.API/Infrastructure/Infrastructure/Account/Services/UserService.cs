@@ -24,13 +24,15 @@
         private readonly SignInManager<User> signInManager;
         private readonly IMapper _mapper;
         private readonly ITransactionHelper _transactionHelper;
+        private readonly IUser _user;
 
-        public UserService(UserManager<User> userManager, IMapper mapper, ITransactionHelper transactionHelper, SignInManager<User> signInManager)
+        public UserService(UserManager<User> userManager, IMapper mapper, ITransactionHelper transactionHelper, SignInManager<User> signInManager, IUser user)
         {
             this.userManager = userManager;
             _mapper = mapper;
             _transactionHelper = transactionHelper;
             this.signInManager = signInManager;
+            _user = user;
         }
 
         public async Task<Result<List<UserResponseGetModel>>> GetListAsync(CancellationToken cancellationToken)
@@ -149,6 +151,9 @@
                     user.AddDomainEvent(userToggleEvent);
                 }
 
+                user.UpdatedBy = _user.Id;
+                user.UpdatedDate = DateTime.UtcNow;
+
                 var result = await userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                 {
@@ -179,22 +184,22 @@
 
                 var changedProperties = new List<string>();
 
-                if (user.FirstName != firstName)
+                if (firstName != null && user.FirstName != firstName)
                 {
                     user.FirstName = firstName;
                     changedProperties.Add(nameof(user.FirstName));
                 }
-                if (user.LastName != lastName)
+                if (lastName != null && user.LastName != lastName)
                 {
                     user.LastName = lastName;
                     changedProperties.Add(nameof(user.LastName));
                 }
-                if (user.UserName != userName)
+                if (userName != null && user.UserName != userName)
                 {
                     user.UserName = userName;
                     changedProperties.Add(nameof(user.UserName));
                 }
-                if (user.Email != email)
+                if (email != null && user.Email != email)
                 {
                     user.Email = email;
                     changedProperties.Add(nameof(user.Email));
@@ -202,9 +207,15 @@
 
                 if (!changedProperties.Any())
                 {
+                    var currentUserRoles = await userManager.GetRolesAsync(user);
+                    var currentUserRole = currentUserRoles.FirstOrDefault();
                     var currentUser = _mapper.Map<UserResponseGetModel>(user);
+                    currentUser.Role = currentUserRole;
                     return Result<UserResponseGetModel>.SuccessResult(currentUser);
                 }
+
+                user.UpdatedBy = _user.Id;
+                user.UpdatedDate = DateTime.UtcNow;
 
                 var result = await userManager.UpdateAsync(user);
                 if (!result.Succeeded)
@@ -219,7 +230,10 @@
 
                 await transaction.CommitAsync();
 
+                var roles = await userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault();
                 var updatedUser = _mapper.Map<UserResponseGetModel>(user);
+                updatedUser.Role = role;
                 return Result<UserResponseGetModel>.SuccessResult(updatedUser);
             }
         }

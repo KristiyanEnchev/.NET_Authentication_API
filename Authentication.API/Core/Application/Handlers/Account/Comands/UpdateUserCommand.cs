@@ -21,11 +21,11 @@
             public async Task<Result<UserResponseGetModel>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
             {
                 var result = await _userService.UpdateUserData(
-                    request.Id!,
-                    request.FirstName!,
-                    request.LastName!,
-                    request.UserName!,
-                    request.Email!,
+                    request.Id,
+                    request.FirstName,
+                    request.LastName,
+                    request.UserName,
+                    request.Email,
                     cancellationToken);
 
                 return result;
