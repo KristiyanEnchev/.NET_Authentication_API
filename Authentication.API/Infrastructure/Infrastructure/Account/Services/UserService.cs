@@ -14,7 +14,6 @@
     using Application.Interfaces;
     using Application.Extensions;
     using Application.Handlers.Account.Common;
-    using Application.Handlers.Identity.Common;
 
     using Models.Enums;
 
