@@ -48,9 +48,16 @@
             return await Mediator.Send(new ToggleStatusCommand(identifier, toggleValiue)).ToActionResult();
         }
 
-        [HttpPost(nameof(Update))]
-        [SwaggerOperation("Toggle user status.", "")]
+        [HttpPut(nameof(Update))]
+        [SwaggerOperation("Update user data.", "")]
         public async Task<IActionResult> Update(UpdateUserCommand request)
+        {
+            return await Mediator.Send(request).ToActionResult();
+        }
+
+        [HttpDelete(nameof(Update))]
+        [SwaggerOperation("Delete user.", "")]
+        public async Task<IActionResult> Delete(DeleteUserCommand request)
         {
             return await Mediator.Send(request).ToActionResult();
         }
