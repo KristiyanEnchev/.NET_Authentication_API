@@ -289,5 +289,31 @@
         //        return Result<UserResponseGetModel>.SuccessResult(updatedUser);
         //    }
         //}
+
+
+        public async Task<Result<string>> DeleteUser(string userId, CancellationToken cancellationToken)
+        {
+            using (var transaction = await _transactionHelper.BeginTransactionAsync())
+            {
+
+                var user = await userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return Result<string>.Failure("User not found.");
+                }
+
+                var result = await userManager.DeleteAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    return Result<string>.Failure(result.Errors.Select(e => e.Description).ToList());
+                }
+
+                await transaction.CommitAsync();
+
+                return Result<string>.SuccessResult(userId);
+            }
+        }
     }
 }
