@@ -25,5 +25,7 @@
             string userName,
             string email,
             CancellationToken cancellationToken);
+
+        Task<Result<string>> DeleteUser(string userId, CancellationToken cancellationToken);
     }
 }

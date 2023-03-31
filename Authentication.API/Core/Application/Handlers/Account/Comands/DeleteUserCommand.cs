@@ -26,7 +26,9 @@
 
             public async Task<Result<string>> Handle(DeleteUserCommand request, CancellationToken cancellationToken) 
             {
+                var result = await _userService.DeleteUser(request.Id, cancellationToken);
 
+                return result;
             }
         }
     }
