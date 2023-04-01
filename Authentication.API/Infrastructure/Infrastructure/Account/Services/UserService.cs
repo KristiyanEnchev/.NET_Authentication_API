@@ -15,7 +15,10 @@
     using Application.Extensions;
     using Application.Handlers.Account.Common;
 
+    using Models;
     using Models.Enums;
+    using Microsoft.Extensions.Options;
+    using Persistence.Constants;
 
     public class UserService : IUserService
     {
@@ -24,14 +27,23 @@
         private readonly IMapper _mapper;
         private readonly ITransactionHelper _transactionHelper;
         private readonly IUser _user;
+        private readonly ApplicationSettings applicationSettings;
 
-        public UserService(UserManager<User> userManager, IMapper mapper, ITransactionHelper transactionHelper, SignInManager<User> signInManager, IUser user)
+
+        public UserService(
+            UserManager<User> userManager,
+            IMapper mapper,
+            ITransactionHelper transactionHelper,
+            SignInManager<User> signInManager,
+            IUser user,
+            IOptions<ApplicationSettings> applicationSettings)
         {
             this.userManager = userManager;
             _mapper = mapper;
             _transactionHelper = transactionHelper;
             this.signInManager = signInManager;
             _user = user;
+            this.applicationSettings = applicationSettings.Value;
         }
 
         public async Task<Result<List<UserResponseGetModel>>> GetListAsync(CancellationToken cancellationToken)
@@ -295,15 +307,30 @@
         {
             using (var transaction = await _transactionHelper.BeginTransactionAsync())
             {
-
                 var user = await userManager.FindByIdAsync(userId);
                 if (user == null)
                 {
                     return Result<string>.Failure("User not found.");
                 }
 
-                var result = await userManager.DeleteAsync(user);
+                var roles = await userManager.GetRolesAsync(user);
+                if (roles.Any(x => x.Contains(Roles.Administrator)))
+                {
+                    return Result<string>.Failure("Cant Delete Administrator User.");
+                }
 
+                if (roles.Any())
+                {
+                    var removeFromRolesResult = await userManager.RemoveFromRolesAsync(user, roles);
+                    if (!removeFromRolesResult.Succeeded)
+                    {
+                        await transaction.RollbackAsync();
+                        return Result<string>.Failure(removeFromRolesResult.Errors.Select(e => e.Description).ToList());
+                    }
+                }
+                await userManager.RemoveAuthenticationTokenAsync(user, applicationSettings.LoginProvider, applicationSettings!.TokenNames!.RefreshToken!);
+
+                var result = await userManager.DeleteAsync(user);
                 if (!result.Succeeded)
                 {
                     await transaction.RollbackAsync();
@@ -311,7 +338,6 @@
                 }
 
                 await transaction.CommitAsync();
-
                 return Result<string>.SuccessResult(userId);
             }
         }
