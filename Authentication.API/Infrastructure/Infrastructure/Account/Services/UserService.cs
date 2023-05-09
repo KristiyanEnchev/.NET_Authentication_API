@@ -19,6 +19,7 @@
     using Models.Enums;
     using Microsoft.Extensions.Options;
     using Persistence.Constants;
+    using System.Security.Claims;
 
     public class UserService : IUserService
     {

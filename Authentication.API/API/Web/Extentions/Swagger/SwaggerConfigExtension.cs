@@ -23,7 +23,7 @@
                     Contact = new OpenApiContact
                     {
                         Name = "Kris" ?? "",
-                        Email = "kris_tech@gmail.com" ?? "",
+                        Email = "kristiqnenchevv@gmail.com" ?? "",
                         Url = null
                     }
                 });
