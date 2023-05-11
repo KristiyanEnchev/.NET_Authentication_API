@@ -126,5 +126,30 @@
 
             return Result<string>.SuccessResult("Succesfull Logout !");
         }
+
+        public async Task<Result<string>> EnableTwoFactorAuthentication(string userEmail, bool rememberMe)
+        {
+            using (var transaction = await transactionHelper.BeginTransactionAsync()) 
+            {
+                var user = await userManager.FindByIdAsync(userEmail);
+                if (user == null)
+                {
+                    return Result<string>.Failure("User not found.");
+                }
+
+                var result = await userManager.SetTwoFactorEnabledAsync(user, true);
+
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    var errors = result.Errors.Select(e => e.Description).ToList();
+                    return Result<string>.Failure(errors);
+                }
+
+                await transaction.CommitAsync();
+
+                return Result<string>.SuccessResult($"2FA enabled for :{userEmail}");
+            }
+        }
     }
 }
