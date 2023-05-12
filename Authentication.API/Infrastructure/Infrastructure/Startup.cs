@@ -68,6 +68,9 @@
                     options.Password.RequireLowercase = false;
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequireUppercase = false;
+
+                    options.SignIn.RequireConfirmedEmail = true;
+                    options.SignIn.RequireConfirmedPhoneNumber = false;
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddTokenProvider("Authentication.Api", typeof(DataProtectorTokenProvider<User>));

@@ -14,6 +14,7 @@
     using Application.Interfaces;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Register;
+    using Microsoft.AspNetCore.Mvc;
 
     internal class IdentityService : IIdentity
     {
@@ -147,7 +148,31 @@
 
                 await transaction.CommitAsync();
 
-                return Result<string>.SuccessResult($"2FA enabled for :{userEmail}");
+                return Result<string>.SuccessResult($"Email confirmed :{userEmail}");
+            }
+        }
+
+        public async Task<Result<string>> UnlockUserAccount(string userEmail)
+        {
+            using (var transaction = await transactionHelper.BeginTransactionAsync())
+            {
+                var user = await userManager.FindByEmailAsync(userEmail);
+                if (user == null)
+                {
+                    return Result<string>.Failure("User not found.");
+                }
+
+                var result = await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
+                if (!result.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    var errors = result.Errors.Select(e => e.Description).ToList();
+                    return Result<string>.Failure(errors);
+                }
+
+                await transaction.CommitAsync();
+
+                return Result<string>.SuccessResult($"User account unlocked :{userEmail}");
             }
         }
 
