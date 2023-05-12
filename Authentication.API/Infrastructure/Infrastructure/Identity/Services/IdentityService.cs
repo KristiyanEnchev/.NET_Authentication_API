@@ -14,7 +14,6 @@
     using Application.Interfaces;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Register;
-    using Microsoft.AspNetCore.Mvc;
 
     internal class IdentityService : IIdentity
     {
@@ -128,7 +127,31 @@
             return Result<string>.SuccessResult("Succesfull Logout !");
         }
 
-        public async Task<Result<string>> EnableTwoFactorAuthentication(string userEmail, bool rememberMe)
+        public async Task<Result<string>> ConfirmEmail(string userEmail, string code)
+        {
+            using (var transaction = await transactionHelper.BeginTransactionAsync())
+            {
+                var user = await userManager.FindByEmailAsync(userEmail);
+                if (user == null || code == null) 
+                {
+                    return Result<string>.Failure("User not found.");
+                }
+
+                var result = await userManager.ConfirmEmailAsync(user, code);
+                if (result.Succeeded) 
+                {
+                    await transaction.RollbackAsync();
+                    var errors = result.Errors.Select(e => e.Description).ToList();
+                    return Result<string>.Failure(errors);
+                }
+
+                await transaction.CommitAsync();
+
+                return Result<string>.SuccessResult($"2FA enabled for :{userEmail}");
+            }
+        }
+
+        public async Task<Result<string>> EnableTwoFactorAuthentication(string userEmail)
         {
             using (var transaction = await transactionHelper.BeginTransactionAsync())
             {
