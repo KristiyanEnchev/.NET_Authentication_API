@@ -14,6 +14,8 @@
     using Application.Interfaces;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Register;
+    using Microsoft.AspNetCore.WebUtilities;
+    using System.Text;
 
     internal class IdentityService : IIdentity
     {
@@ -149,6 +151,25 @@
 
                 return Result<string>.SuccessResult($"Email confirmed :{userEmail}");
             }
+        }
+
+        public async Task<string> GetEmailVerificationUriAsync(User user, string origin)
+        {
+            string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            string route = "/confirmEmail";
+
+            var endpointUri = new Uri(string.Concat($"{origin}/", route));
+
+            string verificationUri = QueryHelpers.AddQueryString(endpointUri.ToString(), "email", user.Email!);
+
+            verificationUri = QueryHelpers.AddQueryString(verificationUri, "code", code);
+
+            //verificationUri = QueryHelpers.AddQueryString(verificationUri, QueryStringKeys.Otp, Otp);
+
+            return verificationUri;
         }
 
         public async Task<Result<string>> UnlockUserAccount(string userEmail)
