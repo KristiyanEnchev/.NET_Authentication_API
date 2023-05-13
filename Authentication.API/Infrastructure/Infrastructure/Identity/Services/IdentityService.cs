@@ -14,7 +14,6 @@
     using Application.Interfaces;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Register;
-    using Microsoft.AspNetCore.Mvc;
 
     internal class IdentityService : IIdentity
     {
