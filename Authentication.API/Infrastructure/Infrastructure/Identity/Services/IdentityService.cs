@@ -98,7 +98,8 @@
 
             if (!signInResult.Succeeded)
             {
-                throw new CustomException(InvalidErrorMessage, null, System.Net.HttpStatusCode.Unauthorized);
+                var errors = new List<string> { InvalidErrorMessage };
+                return Result<UserResponseModel>.Failure(errors);
             }
 
             var tokenResult = await jwtGenerator.GenerateToken(user);
@@ -153,6 +154,23 @@
             }
         }
 
+        public async Task<Result<string>> SendVerificationEmailAsync(string email, string origin)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                return Result<string>.Failure("User not found.");
+            }
+
+            string emailVerificationUri = await GetEmailVerificationUriAsync(user, origin);
+
+            // here needs to go the Email sending logic
+
+            return Result<string>.SuccessResult(emailVerificationUri);
+            //return Result<string>.SuccessResult($"Email sent to {email}");
+        }
+
         public async Task<string> GetEmailVerificationUriAsync(User user, string origin)
         {
             string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -167,7 +185,7 @@
 
             verificationUri = QueryHelpers.AddQueryString(verificationUri, "code", code);
 
-            //verificationUri = QueryHelpers.AddQueryString(verificationUri, QueryStringKeys.Otp, Otp);
+            //verificationUri = QueryHelpers.AddQueryString(verificationUri, "otp", Otp);
 
             return verificationUri;
         }
