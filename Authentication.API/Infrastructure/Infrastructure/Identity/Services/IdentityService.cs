@@ -1,9 +1,11 @@
 ﻿namespace Infrastructure.Identity.Services
 {
+    using System.Text;
     using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.WebUtilities;
 
     using Domain.Events;
     using Domain.Entities.Identity;
@@ -14,8 +16,6 @@
     using Application.Interfaces;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Register;
-    using Microsoft.AspNetCore.WebUtilities;
-    using System.Text;
 
     internal class IdentityService : IIdentity
     {
@@ -130,7 +130,7 @@
             return Result<string>.SuccessResult("Succesfull Logout !");
         }
 
-        public async Task<Result<string>> ConfirmEmail(string userEmail, string code)
+        public async Task<Result<string>> ConfirmEmail(string userEmail, string code, string otp)
         {
             using (var transaction = await transactionHelper.BeginTransactionAsync())
             {
