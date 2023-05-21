@@ -13,6 +13,7 @@
     using Application.Handlers.Identity.Commands.Logout;
     using Application.Handlers.Identity.Commands.Refresh;
     using Application.Handlers.Identity.Commands.Register;
+    using Application.Handlers.Identity.Commands.User;
 
     public class IdentityController : ApiController
     {
@@ -42,9 +43,16 @@
 
         [HttpPost(nameof(Logout))]
         [SwaggerOperation("Logs out a user", "")]
-        public async Task<ActionResult<Result<string>>> Logout(UserLogoutCommand email)
+        public async Task<ActionResult<Result<string>>> Logout(UserLogoutCommand request)
         {
-            return await Mediator.Send(email).ToActionResult();
+            return await Mediator.Send(request).ToActionResult();
+        }
+
+        [HttpPost(nameof(ConfirmEmail))]
+        [SwaggerOperation("Confirm User Email", "")]
+        public async Task<ActionResult<Result<string>>> ConfirmEmail(ConfirmEmailCommand request)
+        {
+            return await Mediator.Send(request).ToActionResult();
         }
     }
 }
