@@ -54,5 +54,19 @@
         {
             return await Mediator.Send(request).ToActionResult();
         }
+
+        [HttpPost(nameof(Enable2fa))]
+        [SwaggerOperation("Enable Two Factor Authentication", "")]
+        public async Task<ActionResult<Result<string>>> Enable2fa(EnableTwoFactorAuthenticationCommand request)
+        {
+            return await Mediator.Send(request).ToActionResult();
+        }
+
+        [HttpPost(nameof(Disable2Fa))]
+        [SwaggerOperation("Disable Two Factor Authentication", "")]
+        public async Task<ActionResult<Result<string>>> Disable2Fa(DisableTwoFactorAuthenticationCommand request)
+        {
+            return await Mediator.Send(request).ToActionResult();
+        }
     }
 }
