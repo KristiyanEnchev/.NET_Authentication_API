@@ -68,5 +68,12 @@
         {
             return await Mediator.Send(request).ToActionResult();
         }
+
+        [HttpPost(nameof(UnlockAccount))]
+        [SwaggerOperation("Unlock User Account", "")]
+        public async Task<ActionResult<Result<string>>> UnlockAccount(UnlockUserAccountCommand request)
+        {
+            return await Mediator.Send(request).ToActionResult();
+        }
     }
 }
