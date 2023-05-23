@@ -90,6 +90,7 @@
                 IsActive = true,
                 CreatedBy = "Initial Seed",
                 CreatedDate = DateTime.UtcNow,
+                EmailConfirmed = true,
             };
 
             if (_userManager.Users.All(u => u.UserName != administrator.UserName))

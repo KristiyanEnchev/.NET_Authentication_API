@@ -8,12 +8,13 @@
     using Web.Extentions;
 
     using Shared;
+
     using Application.Handlers.Identity.Common;
+    using Application.Handlers.Identity.Commands.User;
     using Application.Handlers.Identity.Commands.Login;
     using Application.Handlers.Identity.Commands.Logout;
     using Application.Handlers.Identity.Commands.Refresh;
     using Application.Handlers.Identity.Commands.Register;
-    using Application.Handlers.Identity.Commands.User;
 
     public class IdentityController : ApiController
     {

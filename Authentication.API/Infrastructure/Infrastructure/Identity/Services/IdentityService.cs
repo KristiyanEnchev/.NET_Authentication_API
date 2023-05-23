@@ -87,19 +87,23 @@
 
         public async Task<Result<UserResponseModel>> Login(UserRequestModel userRequest)
         {
-            if (await userManager.FindByEmailAsync(userRequest.Email.Trim().Normalize()) is not { } user
-                || !await userManager.CheckPasswordAsync(user, userRequest.Password)
-                || !user.IsActive)
+            var email = userRequest.Email.Trim().Normalize();
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null || !user.IsActive)
             {
-                throw new CustomException(InvalidErrorMessage, null, System.Net.HttpStatusCode.Unauthorized);
+                return Result<UserResponseModel>.Failure(new List<string> { InvalidErrorMessage });
             }
 
-            SignInResult signInResult = await signInManager.PasswordSignInAsync(user, userRequest.Password, false, lockoutOnFailure: false);
+            if (!user.EmailConfirmed || await userManager.IsLockedOutAsync(user))
+            {
+                return Result<UserResponseModel>.Failure(new List<string> { "Account is not accessible at the moment." });
+            }
+
+            SignInResult signInResult = await signInManager.PasswordSignInAsync(user, userRequest.Password, false, lockoutOnFailure: true);
 
             if (!signInResult.Succeeded)
             {
-                var errors = new List<string> { InvalidErrorMessage };
-                return Result<UserResponseModel>.Failure(errors);
+                return Result<UserResponseModel>.Failure(new List<string> { InvalidErrorMessage });
             }
 
             var tokenResult = await jwtGenerator.GenerateToken(user);
