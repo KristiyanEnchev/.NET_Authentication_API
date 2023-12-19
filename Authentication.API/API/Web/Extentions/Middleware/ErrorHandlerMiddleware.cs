@@ -87,7 +87,7 @@
             var errorResponse = new
             {
                 success = false,
-                data = (object)null,
+                data = (object)null!,
                 errors = messages
             };
 

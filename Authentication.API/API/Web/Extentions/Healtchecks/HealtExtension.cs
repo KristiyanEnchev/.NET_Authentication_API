@@ -23,7 +23,7 @@
             if (databaseHealthChecks != null && (bool)databaseHealthChecks)
             {
                 healthChecks
-                    .AddSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                    .AddSqlServer(configuration!.GetConnectionString("DefaultConnection")!);
             }
 
             return services;

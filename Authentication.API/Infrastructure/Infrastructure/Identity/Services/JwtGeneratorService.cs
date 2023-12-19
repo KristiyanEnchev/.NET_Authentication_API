@@ -52,8 +52,8 @@
         public async Task<string> GenerateRefreshToken(User user)
         {
             await RemoveAuthenticationToken(user);
-            string newRefreshToken = await GenerateRefreshTokenWithSecret(user);
-            IdentityResult result = await userManager.SetAuthenticationTokenAsync(user, applicationSettings.LoginProvider, applicationSettings.TokenNames.RefreshToken, newRefreshToken);
+            string newRefreshToken = GenerateRefreshTokenWithSecret(user);
+            IdentityResult result = await userManager.SetAuthenticationTokenAsync(user, applicationSettings.LoginProvider!, applicationSettings.TokenNames!.RefreshToken!, newRefreshToken);
 
             if (!result.Succeeded)
             {
@@ -82,7 +82,7 @@
 
                 var principal = tokenHandler.ValidateToken(refreshToken, _tokenValidationParameters, out validatedToken);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new CustomException(InvalidToken, null, System.Net.HttpStatusCode.Unauthorized);
             }
@@ -105,7 +105,7 @@
                 throw new CustomException(InvalidToken, null, System.Net.HttpStatusCode.Unauthorized);
             }
 
-            string oldRefreshToken = await userManager.GetAuthenticationTokenAsync(user, applicationSettings.LoginProvider, applicationSettings.TokenNames.RefreshToken!) ?? "";
+            string oldRefreshToken = await userManager.GetAuthenticationTokenAsync(user, applicationSettings.LoginProvider!, applicationSettings.TokenNames!.RefreshToken!) ?? "";
 
             if (oldRefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
@@ -144,7 +144,7 @@
             return encryptedToken;
         }
 
-        public async Task<string> GenerateRefreshTokenWithSecret(User user)
+        public string GenerateRefreshTokenWithSecret(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(applicationSettings.RefreshSecret!);
@@ -168,7 +168,7 @@
 
         public async Task RemoveAuthenticationToken(User user)
         {
-            await userManager.RemoveAuthenticationTokenAsync(user, applicationSettings.LoginProvider, applicationSettings.TokenNames.RefreshToken!);
+            await userManager.RemoveAuthenticationTokenAsync(user, applicationSettings.LoginProvider!, applicationSettings.TokenNames!.RefreshToken!);
         }
     }
 }

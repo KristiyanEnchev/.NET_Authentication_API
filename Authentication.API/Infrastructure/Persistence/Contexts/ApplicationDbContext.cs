@@ -35,7 +35,7 @@
             _user = user;
         }
 
-        public DbSet<UserRole> Roles { get; set; }
+        public override DbSet<UserRole> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -56,8 +56,8 @@
 
             foreach (var userResponse in users)
             {
-                var user = await userManager.FindByIdAsync(userResponse.Id);
-                var roles = await userManager.GetRolesAsync(user);
+                var user = await userManager.FindByIdAsync(userResponse.Id!);
+                var roles = await userManager.GetRolesAsync(user!);
                 var role = roles.FirstOrDefault();
                 userResponse.Role = role;
             }
@@ -82,8 +82,8 @@
 
             foreach (var userResponse in paginatedAndSortedUsers.Data)
             {
-                var user = await userManager.FindByIdAsync(userResponse.Id);
-                var roles = await userManager.GetRolesAsync(user);
+                var user = await userManager.FindByIdAsync(userResponse.Id!);
+                var roles = await userManager.GetRolesAsync(user!);
                 var role = roles.FirstOrDefault();
                 userResponse.Role = role;
             }
@@ -329,7 +329,7 @@
                         return Result<string>.Failure(removeFromRolesResult.Errors.Select(e => e.Description).ToList());
                     }
                 }
-                await userManager.RemoveAuthenticationTokenAsync(user, applicationSettings.LoginProvider, applicationSettings!.TokenNames!.RefreshToken!);
+                await userManager.RemoveAuthenticationTokenAsync(user, applicationSettings.LoginProvider!, applicationSettings!.TokenNames!.RefreshToken!);
 
                 var result = await userManager.DeleteAsync(user);
                 if (!result.Succeeded)

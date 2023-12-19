@@ -123,7 +123,7 @@
                             var errorResponse = new
                             {
                                 success = false,
-                                data = (object)null,
+                                data = (object)null!,
                                 errors = new List<string> { "Authentication failed. Access is denied.", "Unauthorized Access" }
                             };
                             var response = context.Response;

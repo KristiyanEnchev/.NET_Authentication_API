@@ -32,7 +32,7 @@
                 NullValueHandling = NullValueHandling.Ignore,
                 Converters = new List<JsonConverter>
                 {
-                    new StringEnumConverter() { CamelCaseText = true }
+                    new StringEnumConverter() { NamingStrategy = new CamelCaseNamingStrategy()}
                 }
             });
             httpContext.Response.ContentType = "application/json";
