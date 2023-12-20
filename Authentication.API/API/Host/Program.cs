@@ -18,6 +18,7 @@ namespace Host
                 var builder = WebApplication.CreateBuilder(args);
 
                 builder.RegisterSerilog();
+                builder.Services.AddConfigurations(builder.WebHost, builder.Environment);
                 builder.Services.AddWeb(builder.Configuration);
 
                 var app = builder.Build();

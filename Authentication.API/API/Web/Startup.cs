@@ -4,6 +4,7 @@
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Routing;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -52,6 +53,20 @@
             await initialiser.InitialiseAsync();
 
             await initialiser.SeedAsync();
+        }
+
+        public static IServiceCollection AddConfigurations(this IServiceCollection services, IWebHostBuilder hostBulder, IWebHostEnvironment env)
+        {
+            hostBulder.ConfigureAppConfiguration(config =>
+            {
+                config.SetBasePath(Directory.GetCurrentDirectory());
+                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                config.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                config.AddEnvironmentVariables();
+                config.Build();
+            });
+
+            return services;
         }
 
         public static IApplicationBuilder UseWeb(this IApplicationBuilder builder)

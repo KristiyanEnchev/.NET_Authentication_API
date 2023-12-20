@@ -7,6 +7,7 @@ services:
       dockerfile: /API/Host/Dockerfile
     environment:
       - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=NewAuthenticationDB;User Id=localAdmin;Password=localAdmin;Encrypt=False;
+      - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://0.0.0.0:80
     ports:
       - "5069:80"
