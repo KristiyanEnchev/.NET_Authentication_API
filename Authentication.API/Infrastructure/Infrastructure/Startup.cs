@@ -25,11 +25,11 @@
     using Infrastructure.Identity.Services;
     using Infrastructure.Account.Services;
 
+    using Persistence;
     using Persistence.Contexts;
     using Persistence.Constants;
 
     using Models;
-    using Microsoft.Extensions.Options;
 
     public static class Startup
     {
@@ -41,6 +41,8 @@
                 .AddConfigurations(configuration)
                 .AddCustomAuthentication(configuration)
                 .AddCustomAuthorization();
+
+            services.AddPersistence(configuration);
 
             return services;
         }
@@ -54,6 +56,17 @@
                 .AddTransient<IUserService, UserService>();
 
             return services;
+        }
+
+        public static async Task InitializeDatabase(this IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+
+            var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+
+            await initialiser.InitialiseAsync();
+
+            await initialiser.SeedAsync();
         }
 
         private static IServiceCollection AddIdentity(this IServiceCollection services)

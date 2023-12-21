@@ -18,9 +18,6 @@
 
     using Infrastructure;
 
-    using Persistence;
-    using Persistence.Contexts;
-
     public static class Startup
     {
         public static IServiceCollection AddWeb(this IServiceCollection services, IConfiguration config)
@@ -33,7 +30,6 @@
 
             services.AddApplication();
             services.AddInfrastructure(config);
-            services.AddPersistence(config);
 
             services.AddSwaggerDocumentation();
 
@@ -42,17 +38,6 @@
             services.AddScoped<IUser, CurrentUser>();
 
             return services;
-        }
-
-        public static async Task InitializeDatabase(this IServiceProvider services)
-        {
-            using var scope = services.CreateScope();
-
-            var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
-
-            await initialiser.InitialiseAsync();
-
-            await initialiser.SeedAsync();
         }
 
         public static IServiceCollection AddConfigurations(this IServiceCollection services, IWebHostBuilder hostBulder, IWebHostEnvironment env)

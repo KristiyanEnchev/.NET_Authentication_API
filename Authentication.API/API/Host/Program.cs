@@ -7,6 +7,8 @@ namespace Host
     using Web;
     using Web.Extentions.Logging;
 
+    using Infrastructure;
+
     public class Program
     {
         public static async Task Main(string[] args)
