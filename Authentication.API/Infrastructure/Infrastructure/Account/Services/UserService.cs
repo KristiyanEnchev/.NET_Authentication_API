@@ -1,5 +1,6 @@
 ﻿namespace Infrastructure.Account.Services
 {
+    using Microsoft.Extensions.Options;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
 
@@ -11,15 +12,14 @@
 
     using Shared;
 
+    using Persistence.Constants;
+
     using Application.Interfaces;
     using Application.Extensions;
     using Application.Handlers.Account.Common;
 
     using Models;
     using Models.Enums;
-    using Microsoft.Extensions.Options;
-    using Persistence.Constants;
-    using System.Security.Claims;
 
     public class UserService : IUserService
     {
@@ -317,7 +317,7 @@
                 var roles = await userManager.GetRolesAsync(user);
                 if (roles.Any(x => x.Contains(Roles.Administrator)))
                 {
-                    return Result<string>.Failure("Cant Delete Administrator User.");
+                    return Result<string>.Failure("Can't Delete Administrator User.");
                 }
 
                 if (roles.Any())

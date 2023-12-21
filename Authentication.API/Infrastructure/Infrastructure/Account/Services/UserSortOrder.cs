@@ -16,7 +16,7 @@
         public override Expression<Func<User, object>> ToExpression()
             => this.SortBy switch
             {
-                "email" => User => User.Email,
+                "email" => User => User.Email!,
                 "firstName" => User => User.FirstName!,
                 "lastName" => User => User.LastName!,
                 _ => User => User.Id

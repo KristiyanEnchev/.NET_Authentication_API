@@ -1,4 +1,4 @@
-﻿namespace Persistence.Contexts
+﻿namespace Application.Interfaces
 {
     using Microsoft.EntityFrameworkCore.Infrastructure;
 
