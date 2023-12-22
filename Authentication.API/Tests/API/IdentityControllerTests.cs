@@ -11,6 +11,8 @@
     using Shouldly;
 
     using Application.Handlers.Identity.Commands.Register;
+    using Application.Handlers.Identity.Commands.Login;
+    using Application.Handlers.Identity.Common;
 
     [TestFixture]
     public class IdentityControllerTests
@@ -55,6 +57,39 @@
             result.ShouldBeOfType<Result<string>>();
             result.Success.ShouldBeFalse();
             result.Errors.ShouldContain("Email already in use");
+        }
+
+        // Success scenario
+        [Test]
+        public async Task Login_Successful_With_Valid_Credentials()
+        {
+            var token = "valid_token";
+            var refreshToken = "valid_token";
+            var refreshTokenExpiryTime = DateTime.UtcNow;
+            var tokenResponse = new UserResponseModel(token, refreshTokenExpiryTime, refreshToken);
+            var loginCommand = new UserLoginCommand("email@example.com", "Password123");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UserLoginCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<UserResponseModel>.SuccessResult(tokenResponse));
+
+            var result = await _mockMediator.Object.Send(loginCommand);
+
+            result.ShouldBeOfType<Result<UserResponseModel>>();
+            result.Success.ShouldBeTrue();
+            (result as Result<UserResponseModel>).Data.AccesToken.ShouldNotBeNullOrEmpty();
+        }
+
+        // Failure scenario
+        [Test]
+        public async Task Login_Fails_With_Invalid_Credentials()
+        {
+            var loginCommand = new UserLoginCommand("email@example.com", "WrongPassword");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UserLoginCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<UserResponseModel>.Failure("Invalid credentials"));
+
+            var result = await _mockMediator.Object.Send(loginCommand);
+
+            result.Success.ShouldBeFalse();
+            result.Errors.ShouldContain("Invalid credentials");
         }
     }
 }
