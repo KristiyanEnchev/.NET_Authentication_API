@@ -13,6 +13,7 @@
     using Application.Handlers.Identity.Commands.Register;
     using Application.Handlers.Identity.Commands.Login;
     using Application.Handlers.Identity.Common;
+    using Application.Handlers.Identity.Commands.Logout;
 
     [TestFixture]
     public class IdentityControllerTests
@@ -90,6 +91,40 @@
 
             result.Success.ShouldBeFalse();
             result.Errors.ShouldContain("Invalid credentials");
+        }
+
+        [Test]
+        public async Task Logout_Successfully()
+        {
+            // Arrange
+            var logoutCommand = new UserLogoutCommand("email@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UserLogoutCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.SuccessResult("Logged out successfully"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(logoutCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeTrue();
+            result.Data.ShouldBe("Logged out successfully");
+        }
+
+        [Test]
+        public async Task Logout_Fails_When_User_Not_Found()
+        {
+            // Arrange
+            var logoutCommand = new UserLogoutCommand("unknown@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UserLogoutCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.Failure("User not found"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(logoutCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeFalse();
+            result.Errors.ShouldContain("User not found");
         }
     }
 }
