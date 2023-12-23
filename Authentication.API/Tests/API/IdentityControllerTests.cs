@@ -15,6 +15,7 @@
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Logout;
     using Application.Handlers.Identity.Commands.User;
+    using Application.Handlers.Identity.Commands.Refresh;
 
     [TestFixture]
     public class IdentityControllerTests
@@ -92,6 +93,41 @@
 
             result.Success.ShouldBeFalse();
             result.Errors.ShouldContain("Invalid credentials");
+        }
+
+        [Test]
+        public async Task Refresh_Token_Successfully()
+        {
+            // Arrange
+            var refreshTokenCommand = new UserRefreshCommand("valid_refresh_token");
+            var expectedResponse = new UserResponseModel("new_access_token", DateTime.UtcNow.AddHours(1), "new_refresh_token");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UserRefreshCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<UserResponseModel>.SuccessResult(expectedResponse));
+
+            // Act
+            var result = await _mockMediator.Object.Send(refreshTokenCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<UserResponseModel>>();
+            result.Success.ShouldBeTrue();
+            result.Data.AccesToken.ShouldNotBeNullOrEmpty();
+        }
+
+        [Test]
+        public async Task Refresh_Token_Fails_With_Invalid_Token()
+        {
+            // Arrange
+            var refreshTokenCommand = new UserRefreshCommand("invalid_refresh_token");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UserRefreshCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<UserResponseModel>.Failure("Invalid token"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(refreshTokenCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<UserResponseModel>>();
+            result.Success.ShouldBeFalse();
+            result.Errors.ShouldContain("Invalid token");
         }
 
         [Test]
