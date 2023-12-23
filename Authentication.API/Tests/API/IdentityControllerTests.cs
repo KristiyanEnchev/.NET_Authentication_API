@@ -14,6 +14,7 @@
     using Application.Handlers.Identity.Commands.Login;
     using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Logout;
+    using Application.Handlers.Identity.Commands.User;
 
     [TestFixture]
     public class IdentityControllerTests
@@ -125,6 +126,40 @@
             result.ShouldBeOfType<Result<string>>();
             result.Success.ShouldBeFalse();
             result.Errors.ShouldContain("User not found");
+        }
+
+        [Test]
+        public async Task Confirm_Email_Successfully()
+        {
+            // Arrange
+            var confirmEmailCommand = new ConfirmEmailCommand("email@example.com", "confirmation_code", "0000");
+            _mockMediator.Setup(x => x.Send(It.IsAny<ConfirmEmailCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.SuccessResult("Email confirmed successfully"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(confirmEmailCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeTrue();
+            result.Data.ShouldBe("Email confirmed successfully");
+        }
+
+        [Test]
+        public async Task Confirm_Email_Fails_When_Code_Invalid()
+        {
+            // Arrange
+            var confirmEmailCommand = new ConfirmEmailCommand("email@example.com", "invalid_code", "0000");
+            _mockMediator.Setup(x => x.Send(It.IsAny<ConfirmEmailCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.Failure("Invalid confirmation code"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(confirmEmailCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeFalse();
+            result.Errors.ShouldContain("Invalid confirmation code");
         }
     }
 }

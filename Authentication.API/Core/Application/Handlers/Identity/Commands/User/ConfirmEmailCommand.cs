@@ -12,6 +12,13 @@
         public string? Code { get; set; }
         public string? Otp { get; set; }
 
+        public ConfirmEmailCommand(string email, string code, string otp)
+        {
+            this.Email = email;
+            this.Code = code;
+            this.Otp = otp;
+        }
+
 
         public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, Result<string>> 
         {
