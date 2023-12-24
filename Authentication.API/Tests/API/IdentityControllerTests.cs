@@ -197,5 +197,73 @@
             result.Success.ShouldBeFalse();
             result.Errors.ShouldContain("Invalid confirmation code");
         }
+
+        [Test]
+        public async Task Enable_2FA_Successfully()
+        {
+            // Arrange
+            var enable2FACommand = new EnableTwoFactorAuthenticationCommand("email@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<EnableTwoFactorAuthenticationCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.SuccessResult("2FA enabled successfully"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(enable2FACommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeTrue();
+            result.Data.ShouldBe("2FA enabled successfully");
+        }
+
+        [Test]
+        public async Task Enable_2FA_Fails_When_User_Not_Found()
+        {
+            // Arrange
+            var enable2FACommand = new EnableTwoFactorAuthenticationCommand("unknown@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<EnableTwoFactorAuthenticationCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.Failure("User not found"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(enable2FACommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeFalse();
+            result.Errors.ShouldContain("User not found");
+        }
+
+        [Test]
+        public async Task Disable_2FA_Successfully()
+        {
+            // Arrange
+            var disable2FACommand = new DisableTwoFactorAuthenticationCommand("email@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<DisableTwoFactorAuthenticationCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.SuccessResult("2FA disabled successfully"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(disable2FACommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeTrue();
+            result.Data.ShouldBe("2FA disabled successfully");
+        }
+
+        [Test]
+        public async Task Disable_2FA_Fails_When_User_Not_Found()
+        {
+            // Arrange
+            var disable2FACommand = new DisableTwoFactorAuthenticationCommand("unknown@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<DisableTwoFactorAuthenticationCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.Failure("User not found"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(disable2FACommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeFalse();
+            result.Errors.ShouldContain("User not found");
+        }
     }
 }

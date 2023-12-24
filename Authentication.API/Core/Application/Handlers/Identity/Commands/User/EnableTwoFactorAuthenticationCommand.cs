@@ -10,6 +10,11 @@
     {
         public string? Email { get; set; }
 
+        public EnableTwoFactorAuthenticationCommand(string email)
+        {
+            this.Email = email;
+        }
+
         public class EnableTwoFactorAuthenticationCommandHandler : IRequestHandler<EnableTwoFactorAuthenticationCommand, Result<string>>
         {
             private readonly IIdentity _identity;
