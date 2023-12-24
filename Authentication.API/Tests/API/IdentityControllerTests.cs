@@ -265,5 +265,39 @@
             result.Success.ShouldBeFalse();
             result.Errors.ShouldContain("User not found");
         }
+
+        [Test]
+        public async Task Unlock_User_Account_Successfully()
+        {
+            // Arrange
+            var unlockAccountCommand = new UnlockUserAccountCommand("email@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UnlockUserAccountCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.SuccessResult("Account unlocked successfully"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(unlockAccountCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeTrue();
+            result.Data.ShouldBe("Account unlocked successfully");
+        }
+
+        [Test]
+        public async Task Unlock_User_Account_Fails_When_User_Not_Found()
+        {
+            // Arrange
+            var unlockAccountCommand = new UnlockUserAccountCommand("unknown@example.com");
+            _mockMediator.Setup(x => x.Send(It.IsAny<UnlockUserAccountCommand>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(Result<string>.Failure("User not found"));
+
+            // Act
+            var result = await _mockMediator.Object.Send(unlockAccountCommand);
+
+            // Assert
+            result.ShouldBeOfType<Result<string>>();
+            result.Success.ShouldBeFalse();
+            result.Errors.ShouldContain("User not found");
+        }
     }
 }

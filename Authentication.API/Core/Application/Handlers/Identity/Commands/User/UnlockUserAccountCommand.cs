@@ -10,6 +10,11 @@
     {
         public string? Email { get; set; }
 
+        public UnlockUserAccountCommand(string email)
+        {
+            this.Email = email;
+        }
+
         public class UnlockUserAccountCommandHandler : IRequestHandler<UnlockUserAccountCommand, Result<string>>
         {
             private readonly IIdentity _identity;
@@ -19,7 +24,7 @@
                 _identity = identity;
             }
 
-            public async Task<Result<string>> Handle(UnlockUserAccountCommand request, CancellationToken cancellationToken) 
+            public async Task<Result<string>> Handle(UnlockUserAccountCommand request, CancellationToken cancellationToken)
             {
                 var result = await _identity.UnlockUserAccount(request.Email!);
 
