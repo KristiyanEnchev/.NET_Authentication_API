@@ -2,9 +2,8 @@
 {
     using AutoMapper;
 
-    using Application.Common.Mappings;
-
     using Domain.Entities.Identity;
+    using Shared.Mappings;
 
     public class UserResponseGetModel : IMapFrom<User>
     {
