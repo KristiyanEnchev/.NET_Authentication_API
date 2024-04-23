@@ -7,7 +7,7 @@
 
 ## 🏗️ Clean Architecture and Domain-Driven Desig
 
-This project leverages Clean Architecture principles for ASP.NET Core, promoting loose coupling and separation of concerns via dependency inversion. This modular architecture enhances maintainability and scalability. Additionally, it integrates Domain-Driven Design (DDD), aligning the design closely with the business domain to ensure complex business logic is effectively captured and implemented, as guided by the DDD Fundamentals course by Steve Smith and Julie Lerman. This foundational structure supports the robust development of our Authentication and Authorization API.
+This project leverages Clean Architecture principles for ASP.NET Core, promoting loose coupling and separation of concerns via dependency inversion. This modular architecture enhances maintainability and scalability. Additionally, it integrates Domain-Driven Design (DDD), aligning the design closely with the business domain to ensure complex business logic is effectively captured and implemented.
 
 ## 👀 Try it out
 
