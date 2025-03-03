@@ -12,10 +12,11 @@
 
     using Application.Handlers.Identity.Commands.Register;
     using Application.Handlers.Identity.Commands.Login;
-    using Application.Handlers.Identity.Common;
     using Application.Handlers.Identity.Commands.Logout;
     using Application.Handlers.Identity.Commands.User;
     using Application.Handlers.Identity.Commands.Refresh;
+
+    using Models.Identity;
 
     [TestFixture]
     public class IdentityControllerTests
@@ -32,7 +33,7 @@
         public async Task Register_New_User_Successfully()
         {
             // Arrange
-            var userRegisterCommand = new UserRegisterCommand("First", "Last", "email@example.com", "Password123", "Password123");
+            var userRegisterCommand = new UserRegisterCommand("First", "Last", "email@example.com", "Password123", "Password123", true);
             _mockMediator.Setup(x => x.Send(It.IsAny<UserRegisterCommand>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(Result<string>.SuccessResult("Successful Registration"));
 
@@ -49,7 +50,7 @@
         public async Task Register_User_Fails_When_Email_Already_Exists()
         {
             // Arrange
-            var userRegisterCommand = new UserRegisterCommand("First", "Last", "email@example.com", "Password123", "Password123");
+            var userRegisterCommand = new UserRegisterCommand("First", "Last", "email@example.com", "Password123", "Password123", true);
             _mockMediator.Setup(x => x.Send(It.IsAny<UserRegisterCommand>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(Result<string>.Failure("Email already in use"));
 
@@ -70,7 +71,7 @@
             var refreshToken = "valid_token";
             var refreshTokenExpiryTime = DateTime.UtcNow;
             var tokenResponse = new UserResponseModel(token, refreshTokenExpiryTime, refreshToken);
-            var loginCommand = new UserLoginCommand("email@example.com", "Password123");
+            var loginCommand = new UserLoginCommand("email@example.com", "Password123", true);
             _mockMediator.Setup(x => x.Send(It.IsAny<UserLoginCommand>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(Result<UserResponseModel>.SuccessResult(tokenResponse));
 
@@ -78,14 +79,14 @@
 
             result.ShouldBeOfType<Result<UserResponseModel>>();
             result.Success.ShouldBeTrue();
-            (result as Result<UserResponseModel>).Data.AccesToken.ShouldNotBeNullOrEmpty();
+            (result as Result<UserResponseModel>).Data.AccessToken.ShouldNotBeNullOrEmpty();
         }
 
         // Failure scenario
         [Test]
         public async Task Login_Fails_With_Invalid_Credentials()
         {
-            var loginCommand = new UserLoginCommand("email@example.com", "WrongPassword");
+            var loginCommand = new UserLoginCommand("email@example.com", "WrongPassword", true);
             _mockMediator.Setup(x => x.Send(It.IsAny<UserLoginCommand>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(Result<UserResponseModel>.Failure("Invalid credentials"));
 
@@ -110,7 +111,7 @@
             // Assert
             result.ShouldBeOfType<Result<UserResponseModel>>();
             result.Success.ShouldBeTrue();
-            result.Data.AccesToken.ShouldNotBeNullOrEmpty();
+            result.Data.AccessToken.ShouldNotBeNullOrEmpty();
         }
 
         [Test]
