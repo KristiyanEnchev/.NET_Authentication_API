@@ -2,7 +2,8 @@
 {
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using Domain.Common.Interfaces;
+    using Domain.Events;
+    using Domain.Interfaces;
 
     public abstract class BaseEntity : IEntity
     {

@@ -1,11 +1,11 @@
 ﻿namespace Domain.Entities.Identity
 {
-    using Microsoft.AspNetCore.Identity;
-
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using Domain.Common.Interfaces;
-    using Domain.Common;
+    using Microsoft.AspNetCore.Identity;
+
+    using Domain.Interfaces;
+    using Domain.Events;
 
     public class UserRole : IdentityRole, IAuditableEntity
     {

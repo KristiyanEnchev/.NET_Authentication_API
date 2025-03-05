@@ -5,8 +5,8 @@
 
     using Microsoft.AspNetCore.Identity;
 
-    using Domain.Common;
-    using Domain.Common.Interfaces;
+    using Domain.Interfaces;
+    using Domain.Events;
 
     public class User : IdentityUser, IAuditableEntity
     {

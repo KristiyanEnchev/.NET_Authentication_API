@@ -1,6 +1,6 @@
 ﻿namespace Domain.Common
 {
-    using Domain.Common.Interfaces;
+    using Domain.Interfaces;
 
     public abstract class BaseAuditableEntity : BaseEntity, IAuditableEntity
     {

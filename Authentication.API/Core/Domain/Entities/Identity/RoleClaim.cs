@@ -4,8 +4,8 @@
 
     using Microsoft.AspNetCore.Identity;
 
-    using Domain.Common.Interfaces;
-    using Domain.Common;
+    using Domain.Events;
+    using Domain.Interfaces;
 
     public class RoleClaim : IdentityRoleClaim<string>, IAuditableEntity
     {
