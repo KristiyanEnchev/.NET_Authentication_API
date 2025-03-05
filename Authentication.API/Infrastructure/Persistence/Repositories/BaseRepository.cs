@@ -5,8 +5,7 @@
     using Domain.Common;
 
     using Persistence.Contexts;
-
-    using Application.Interfaces.Repositories;
+    using Shared.Interfaces.Repositories;
 
     public class BaseRepository : IBaseRepository
     {

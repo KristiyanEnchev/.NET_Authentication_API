@@ -4,11 +4,10 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    using Application.Interfaces.Repositories;
-
     using Domain.Common;
 
     using Persistence.Contexts;
+    using Shared.Interfaces.Repositories;
 
     public class GenericRepository<T> : IGenericRepository<T> where T : BaseAuditableEntity
     {

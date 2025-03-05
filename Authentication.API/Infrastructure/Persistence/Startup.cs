@@ -6,9 +6,7 @@
 
     using Persistence.Contexts;
     using Persistence.Repositories;
-
-    using Application.Interfaces.Repositories;
-    using Application.Interfaces;
+    using Shared.Interfaces.Repositories;
 
     public static class Startup
     {

@@ -3,8 +3,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore.Storage;
-
-    using Application.Interfaces;
+    using Shared.Interfaces.Repositories;
 
     public class TransactionHelper : ITransactionHelper
     {

@@ -4,12 +4,14 @@
 
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Design;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
     using Application.Interfaces;
 
     using Domain.Common;
-    using Domain.Common.Interfaces;
+    using Domain.Interfaces;
     using Domain.Entities.Identity;
 
     public class ApplicationDbContext :
@@ -23,8 +25,8 @@
             RoleClaim,
             IdentityUserToken<string>>
     {
-        private readonly IDomainEventDispatcher _dispatcher;
-        private readonly IUser _user;
+        private readonly IDomainEventDispatcher? _dispatcher;
+        private readonly IUser? _user;
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
           IDomainEventDispatcher dispatcher,
@@ -36,10 +38,27 @@
         }
 
         public override DbSet<UserRole> Roles { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<RsaKey> RsaKeys { get; set; }
+        public DbSet<UserActivity> UserActivities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.Ignore(e => e.IsExpired);
+                entity.Ignore(e => e.IsRevoked);
+                entity.Ignore(e => e.IsActive);
+
+                entity.HasIndex(r => r.Token);
+
+                entity.HasIndex(r => r.UserId);
+            });
+
+            modelBuilder.Entity<RsaKey>()
+                .HasIndex(k => new { k.IsActive, k.ExpiresOn });
 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
@@ -106,6 +125,23 @@
             foreach (var foreignKey in foreignKeys)
             {
                 foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+            }
+        }
+
+        public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+        {
+            public ApplicationDbContext CreateDbContext(string[] args)
+            {
+                var config = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true)
+                    .Build();
+
+                var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                    .UseSqlServer(config.GetConnectionString("DefaultConnection"))
+                    .Options;
+
+                return new ApplicationDbContext(options, null!, null!);
             }
         }
     }
