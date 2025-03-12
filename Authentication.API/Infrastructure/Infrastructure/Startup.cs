@@ -1,35 +1,37 @@
-﻿namespace Infrastructure
+namespace Infrastructure
 {
-    using System.Net;
-    using System.Text;
+    using System;
+    using System.Net.Http.Headers;
+    using System.Threading.Tasks;
 
-    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Options;
     using Microsoft.AspNetCore.Identity;
-    using Microsoft.IdentityModel.Tokens;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.AspNetCore.Authentication.JwtBearer;
-
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
 
     using MediatR;
 
+    using Polly;
+    using Polly.Extensions.Http;
+
     using Application.Interfaces;
+    using Application.Interfaces.Post;
+    using Application.Interfaces.Identity;
 
-    using Domain.Common;
-    using Domain.Entities.Identity;
-    using Domain.Common.Interfaces;
-
+    using Infrastructure.Account;
+    using Infrastructure.Identity;
     using Infrastructure.Services;
-    using Infrastructure.Identity.Services;
-    using Infrastructure.Account.Services;
+    using Infrastructure.PostServices;
 
     using Persistence;
     using Persistence.Contexts;
-    using Persistence.Constants;
 
-    using Models;
+    using Domain.Events;
+    using Domain.Interfaces;
+    using Domain.Entities.Identity;
+
+    using Models.Settings.Post;
+    using Application.Interfaces.Account;
 
     public static class Startup
     {
@@ -38,9 +40,7 @@
             services
                 .AddServices()
                 .AddIdentity()
-                .AddConfigurations(configuration)
-                .AddCustomAuthentication(configuration)
-                .AddCustomAuthorization();
+                .AddHttpClients(configuration);
 
             services.AddPersistence(configuration);
 
@@ -53,7 +53,17 @@
                 .AddTransient<IMediator, Mediator>()
                 .AddTransient<IDomainEventDispatcher, DomainEventDispatcher>()
                 .AddTransient<IDateTimeService, DateTimeService>()
-                .AddTransient<IUserService, UserService>();
+                .AddTransient<IUserService, UserService>()
+                .AddScoped<IUserActivityService, UserActivityService>()
+                .AddTransient<IEmailService, EmailService>()
+                .AddTransient<ISmsService, SmsService>()
+                .AddTransient<IOtpService, OtpService>()
+                .AddTransient<IIpAddressService, IpAddressService>()
+                .AddTransient<IPasswordService, PasswordService>()
+                .AddTransient<ICookieService, CookieService>()
+                .AddTransient<INotificationService, NotificationService>();
+
+            services.AddHostedService<TokenCleanupService>();
 
             return services;
         }
@@ -74,6 +84,9 @@
             services
                 .AddTransient<IIdentity, IdentityService>()
                 .AddTransient<IJwtGenerator, JwtGeneratorService>()
+                .AddTransient<IRefreshTokenService, RefreshTokenService>()
+                .AddTransient<IRsaKeyService, RsaKeyService>()
+                .AddTransient<IRoleService, RoleService>()
                 .AddIdentity<User, UserRole>(options =>
                 {
                     options.Password.RequiredLength = 6;
@@ -90,77 +103,76 @@
                     options.Lockout.AllowedForNewUsers = true;
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddTokenProvider("Authentication.Api", typeof(DataProtectorTokenProvider<User>));
+                .AddDefaultTokenProviders();
 
             return services;
         }
-        private static IServiceCollection AddConfigurations(this IServiceCollection services, IConfiguration configuration)
+
+        private static IServiceCollection AddHttpClients(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<ApplicationSettings>(configuration.GetSection(nameof(ApplicationSettings)));
+            // Email Service
+            services.AddHttpClient<IEmailService, EmailService>((serviceProvider, client) => {
+                var settings = serviceProvider.GetRequiredService<IOptions<EmailSettings>>().Value;
+                ConfigureClient(client, settings.ApiBaseUrl, settings.ApiKey);
+            })
+            .AddPolicyHandler(GetRetryPolicy())
+            .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+            // SMS Service
+            services.AddHttpClient<ISmsService, SmsService>((serviceProvider, client) => {
+                var settings = serviceProvider.GetRequiredService<IOptions<SmsSettings>>().Value;
+                ConfigureClient(client, settings.ApiBaseUrl, settings.ApiKey);
+            })
+            .AddPolicyHandler(GetRetryPolicy())
+            .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+            // Notification Service
+            services.AddHttpClient<INotificationService, NotificationService>((serviceProvider, client) => {
+                var settings = serviceProvider.GetRequiredService<IOptions<NotificationSettings>>().Value;
+                ConfigureClient(client, settings.ApiBaseUrl, settings.ApiKey);
+            })
+            .AddPolicyHandler(GetRetryPolicy())
+            .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+            // OTP Service
+            services.AddHttpClient<IOtpService, OtpService>((serviceProvider, client) => {
+                var settings = serviceProvider.GetRequiredService<IOptions<OtpSettings>>().Value;
+                ConfigureClient(client, settings.ApiBaseUrl, settings.ApiKey);
+            })
+            .AddPolicyHandler(GetRetryPolicy())
+            .AddPolicyHandler(GetCircuitBreakerPolicy());
+
             return services;
         }
 
-        private static IServiceCollection AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureClient(HttpClient client, string baseUrl, string apiKey)
         {
-            var secret = configuration
-                .GetSection(nameof(ApplicationSettings))
-                .GetValue<string>(nameof(ApplicationSettings.Secret))!;
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                client.BaseAddress = new Uri(baseUrl);
+            }
+            
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            var key = Encoding.UTF8.GetBytes(secret);
-
-            services
-                .AddAuthentication(authentication =>
-                {
-                    authentication.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    authentication.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(bearer =>
-                {
-                    bearer.RequireHttpsMetadata = false;
-                    bearer.SaveToken = true;
-                    bearer.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        ValidateLifetime = true, 
-                        ClockSkew = TimeSpan.Zero
-                    };
-
-                    bearer.Events = new JwtBearerEvents
-                    {
-                        OnChallenge = async context =>
-                        {
-                            context.HandleResponse();
-                            var errorResponse = new
-                            {
-                                success = false,
-                                data = (object)null!,
-                                errors = new List<string> { "Authentication failed. Access is denied.", "Unauthorized Access" }
-                            };
-                            var response = context.Response;
-                            response.ContentType = "application/json";
-                            response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                            await response.WriteAsync(JsonConvert.SerializeObject(errorResponse, new JsonSerializerSettings
-                            {
-                                ContractResolver = new DefaultContractResolver
-                                {
-                                    NamingStrategy = new CamelCaseNamingStrategy(true, true)
-                                }
-                            }));
-                        }
-                    };
-                });
-            return services;
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
+            }
         }
 
-        private static IServiceCollection AddCustomAuthorization(this IServiceCollection services)
+        private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
         {
-            services.AddAuthorization(options =>
-                options.AddPolicy(Policies.CanDelete, policy => policy.RequireRole(Roles.Administrator)));
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+        }
 
-            return services;
+        private static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+        {
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
         }
     }
 }
