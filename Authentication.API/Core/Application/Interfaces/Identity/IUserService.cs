@@ -1,8 +1,8 @@
-﻿namespace Application.Interfaces
+﻿namespace Application.Interfaces.Identity
 {
-    using Application.Handlers.Account.Common;
-    using Application.Handlers.Identity.Common;
+    using Models.Account;
     using Models.Enums;
+
     using Shared;
 
     public interface IUserService
