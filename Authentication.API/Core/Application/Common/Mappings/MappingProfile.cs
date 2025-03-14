@@ -4,6 +4,8 @@
 
     using AutoMapper;
 
+    using Models.Account;
+
     using Shared.Mappings;
 
     public class MappingProfile : Profile
@@ -11,6 +13,7 @@
         public MappingProfile()
         {
             ApplyMappingsFromAssembly(Assembly.GetExecutingAssembly());
+            ApplyMappingsFromAssembly(typeof(UserActivityModel).Assembly);
         }
 
         private void ApplyMappingsFromAssembly(Assembly assembly)
@@ -50,6 +53,17 @@
                     }
                 }
             }
+        }
+    }
+
+    public class AutoMapperConfigurationValidator
+    {
+        private readonly IMapper _mapper;
+
+        public AutoMapperConfigurationValidator(IMapper mapper)
+        {
+            _mapper = mapper;
+            _mapper.ConfigurationProvider.AssertConfigurationIsValid();
         }
     }
 }
