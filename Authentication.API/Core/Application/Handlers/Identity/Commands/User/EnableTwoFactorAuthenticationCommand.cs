@@ -2,9 +2,8 @@
 {
     using MediatR;
 
-    using Application.Interfaces;
-
     using Shared;
+    using Application.Interfaces.Identity;
 
     public class EnableTwoFactorAuthenticationCommand : IRequest<Result<string>>
     {

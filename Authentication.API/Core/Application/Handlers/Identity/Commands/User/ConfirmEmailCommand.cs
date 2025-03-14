@@ -4,7 +4,7 @@
 
     using Shared;
 
-    using Application.Interfaces;
+    using Application.Interfaces.Identity;
 
     public class ConfirmEmailCommand : IRequest<Result<string>>
     {
