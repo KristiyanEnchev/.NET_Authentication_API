@@ -4,9 +4,9 @@
 
     using Models.Enums;
 
-    using Application.Interfaces;
-
     using Shared;
+
+    using Application.Interfaces.Identity;
 
     public class ToggleStatusCommand : IRequest<Result<string>>
     {

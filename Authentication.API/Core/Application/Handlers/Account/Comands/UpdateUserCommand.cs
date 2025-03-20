@@ -2,10 +2,10 @@
 {
     using MediatR;
 
-    using Application.Interfaces;
-    using Application.Handlers.Account.Common;
-
     using Shared;
+
+    using Application.Interfaces.Identity;
+    using Models.Account;
 
     public class UpdateUserCommand : UserUpdateRequestModel, IRequest<Result<UserResponseGetModel>>
     {

@@ -2,12 +2,11 @@
 {
     using MediatR;
 
-    using Application.Interfaces;
-    using Application.Handlers.Account.Common;
-
     using Shared;
 
     using Models.Enums;
+    using Application.Interfaces.Identity;
+    using Models.Account;
 
     public class GetUserQuery : IRequest<Result<UserResponseGetModel>>
     {
