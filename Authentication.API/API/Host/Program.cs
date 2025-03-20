@@ -5,7 +5,7 @@ namespace Host
     using Serilog;
 
     using Web;
-    using Web.Extentions.Logging;
+    using Web.Extensions.Logging;
 
     using Infrastructure;
 
@@ -27,9 +27,7 @@ namespace Host
 
                 await app.Services.InitializeDatabase();
 
-                app.UseWeb();
-                app.MapEndpoints();
-
+                app.UseWeb(builder.Configuration);
                 app.Run();
             }
             catch (Exception ex) when (!ex.GetType().Name.Equals("HostAbortedException", StringComparison.Ordinal))

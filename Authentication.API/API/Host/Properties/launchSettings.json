@@ -5,27 +5,37 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "DEV"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5069"
+      "applicationUrl": "http://localhost:8080"
     },
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "DEV"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7069;http://localhost:5069"
+      "applicationUrl": "https://localhost:7067;http://localhost:8080"
+    },
+    "Host": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "DEV"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7067;http://localhost:8080"
     },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "DEV"
       }
     },
     "Container (Dockerfile)": {
@@ -33,22 +43,19 @@
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Docker",
-        "ASPNETCORE_URLS": "http://+:80"
+        "ASPNETCORE_URLS": "https://+:443;http://+:80"
       },
-      "httpPort": 5069,
-      "sslPort": 7069,
-      "publishAllPorts": false,
-      "useSSL": false
+      "publishAllPorts": true,
+      "useSSL": true
     }
   },
-  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "$schema": "https://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:65397",
-      "sslPort": 44313
+      "applicationUrl": "http://localhost:23359",
+      "sslPort": 44319
     }
   }
 }
