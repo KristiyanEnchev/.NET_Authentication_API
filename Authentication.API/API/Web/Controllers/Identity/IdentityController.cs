@@ -1,77 +1,59 @@
-﻿namespace Web.Controllers.Identity
+namespace Web.Controllers.Identity
 {
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Authorization;
 
     using Swashbuckle.AspNetCore.Annotations;
 
-    using Web.Extentions;
-
     using Shared;
 
-    using Application.Handlers.Identity.Common;
+    using Web.Extensions;
+
     using Application.Handlers.Identity.Commands.User;
     using Application.Handlers.Identity.Commands.Login;
     using Application.Handlers.Identity.Commands.Logout;
     using Application.Handlers.Identity.Commands.Refresh;
     using Application.Handlers.Identity.Commands.Register;
 
+    using Models.Identity;
+
     public class IdentityController : ApiController
     {
         [AllowAnonymous]
-        [HttpPost(nameof(Register))]
-        [SwaggerOperation("Register a user.", "")]
+        [HttpPost("register")]
+        [SwaggerOperation("Register a user", "Creates a new user account and sends a verification email")]
         public async Task<ActionResult<string>> Register(UserRegisterCommand request)
         {
             return await Mediator.Send(request).ToActionResult();
         }
 
         [AllowAnonymous]
-        [HttpPost(nameof(Login))]
-        [SwaggerOperation("Request an access token using credentials.", "")]
+        [HttpPost("login")]
+        [SwaggerOperation("Login with credentials", "Authenticates a user with email and password")]
         public async Task<ActionResult<Result<UserResponseModel>>> Login(UserLoginCommand request)
         {
             return await Mediator.Send(request).ToActionResult();
         }
         
         [AllowAnonymous]
-        [HttpPost(nameof(Refresh))]
-        [SwaggerOperation("Request an access token using a refresh token.", "")]
+        [HttpPost("refresh")]
+        [SwaggerOperation("Refresh an access token", "Gets a new access token using a refresh token")]
         public async Task<ActionResult<Result<UserResponseModel>>> Refresh(UserRefreshCommand request)
         {
             return await Mediator.Send(request).ToActionResult();
         }
 
-        [HttpPost(nameof(Logout))]
-        [SwaggerOperation("Logs out a user", "")]
+        [Authorize]
+        [HttpPost("logout")]
+        [SwaggerOperation("Logout", "Invalidates the user's tokens")]
         public async Task<ActionResult<Result<string>>> Logout(UserLogoutCommand request)
         {
             return await Mediator.Send(request).ToActionResult();
         }
 
-        [HttpPost(nameof(ConfirmEmail))]
-        [SwaggerOperation("Confirm User Email", "")]
-        public async Task<ActionResult<Result<string>>> ConfirmEmail(ConfirmEmailCommand request)
-        {
-            return await Mediator.Send(request).ToActionResult();
-        }
-
-        [HttpPost(nameof(Enable2fa))]
-        [SwaggerOperation("Enable Two Factor Authentication", "")]
-        public async Task<ActionResult<Result<string>>> Enable2fa(EnableTwoFactorAuthenticationCommand request)
-        {
-            return await Mediator.Send(request).ToActionResult();
-        }
-
-        [HttpPost(nameof(Disable2Fa))]
-        [SwaggerOperation("Disable Two Factor Authentication", "")]
-        public async Task<ActionResult<Result<string>>> Disable2Fa(DisableTwoFactorAuthenticationCommand request)
-        {
-            return await Mediator.Send(request).ToActionResult();
-        }
-
-        [HttpPost(nameof(UnlockAccount))]
-        [SwaggerOperation("Unlock User Account", "")]
+        [Authorize(Roles = "Administrator")]
+        [HttpPost("unlock")]
+        [SwaggerOperation("Unlock User Account", "Unlocks a user account that has been locked out due to failed login attempts")]
         public async Task<ActionResult<Result<string>>> UnlockAccount(UnlockUserAccountCommand request)
         {
             return await Mediator.Send(request).ToActionResult();
