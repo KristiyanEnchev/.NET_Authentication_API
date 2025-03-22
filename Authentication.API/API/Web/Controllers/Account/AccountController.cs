@@ -1,4 +1,4 @@
-﻿namespace Web.Controllers.Account
+namespace Web.Controllers.Account
 {
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Authorization;
@@ -6,16 +6,16 @@
     using Swashbuckle.AspNetCore.Annotations;
 
     using Application.Handlers.Account.Queries;
-    using Application.Handlers.Account.Common;
     using Application.Handlers.Account.Comands;
-
-    using Web.Extentions;
 
     using Persistence.Constants;
 
     using Shared;
 
     using Models.Enums;
+    using Models.Account;
+
+    using Web.Extensions;
 
     [Authorize(Roles = Roles.Administrator)]
     public class AccountController : ApiController
