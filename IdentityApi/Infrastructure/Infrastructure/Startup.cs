@@ -16,6 +16,7 @@ namespace Infrastructure
 
     using Application.Interfaces;
     using Application.Interfaces.Post;
+    using Application.Interfaces.Account;
     using Application.Interfaces.Identity;
 
     using Infrastructure.Account;
@@ -31,7 +32,6 @@ namespace Infrastructure
     using Domain.Entities.Identity;
 
     using Models.Settings.Post;
-    using Application.Interfaces.Account;
 
     public static class Startup
     {

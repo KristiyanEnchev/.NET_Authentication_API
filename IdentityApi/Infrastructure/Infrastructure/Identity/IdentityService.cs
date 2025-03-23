@@ -27,6 +27,7 @@ namespace Infrastructure.Identity
 
     using Models.Settings;
     using Models.Identity;
+    using static System.Net.WebRequestMethods;
 
     internal class IdentityService : IIdentity
     {
@@ -92,6 +93,8 @@ namespace Infrastructure.Identity
                 CreatedDate = _dateTimeService.NowUtc
             };
 
+            if (!_applicationSettings.UseMicroservices) user.EmailConfirmed = true;
+
             using (var transaction = await _transactionHelper.BeginTransactionAsync())
             {
                 try
@@ -128,13 +131,16 @@ namespace Infrastructure.Identity
 
             user.AddDomainEvent(userRegisteredEvent);
 
-            await SendVerificationEmailAsync(userRequest.Email);
+            if (_applicationSettings.UseMicroservices && _notificationService != null)
+            {
+                await SendVerificationEmailAsync(userRequest.Email);
 
-            await _notificationService.SendNotificationAsync(
-                user.Id,
-                "Welcome!",
-                "Your email has been confirmed. Your account is now active.",
-                "welcome");
+                await _notificationService.SendNotificationAsync(
+                    user.Id,
+                    "Welcome!",
+                    "Your email has been confirmed. Your account is now active.",
+                    "welcome");
+            }
 
             return Result<string>.SuccessResult("Registration successful! Please verify your email to activate your account.");
         }
@@ -214,11 +220,14 @@ namespace Infrastructure.Identity
 
                 user.AddDomainEvent(new UserLockedOutEvent(user.Id, user.Email, lockoutEnd));
 
-                await _notificationService.SendNotificationAsync(
+                if (_applicationSettings.UseMicroservices && _notificationService != null)
+                {
+                    await _notificationService.SendNotificationAsync(
                     user.Id,
                     "Account Temporarily Locked",
                     $"Your account has been locked due to multiple failed login attempts. Try again in {minutes} minute(s).",
                     "account_locked");
+                }
 
                 return Result<UserResponseModel>.Failure(
                     $"Account is locked due to multiple failed attempts. Try again in {minutes} minute(s).");
@@ -426,6 +435,22 @@ namespace Infrastructure.Identity
 
             var user = userResult.Data;
 
+            if (_applicationSettings.UseMicroservices) 
+            {
+                return await UserMicroserviceCalls(user);
+            }
+
+            var dto = new TwoFactorCodeResult
+            {
+                TransactionId = Guid.NewGuid().ToString(),
+                Message = $"Manual delivery fallback. Code: 123456"
+            };
+
+            return Result<TwoFactorCodeResult>.SuccessResult(dto);
+        }
+
+        private async Task<Result<TwoFactorCodeResult>> UserMicroserviceCalls(User user)
+        {
             var result = await _otpService.GenerateOtpAsync(user.Id, "TwoFactorAuth");
             if (!result.Success || string.IsNullOrEmpty(result.Data.Otp) || string.IsNullOrEmpty(result.Data.TransactionId))
                 return Result<TwoFactorCodeResult>.Failure("Failed to generate verification code.");
@@ -471,7 +496,7 @@ namespace Infrastructure.Identity
             var user = userResult.Data;
 
             bool isValid = false;
-            if (_otpService != null)
+            if (_applicationSettings.UseMicroservices && _otpService != null)
             {
                 var resutl = await _otpService.ValidateOtpAsync(transactionId, code, userId);
                 isValid = resutl.Data;

@@ -5,38 +5,44 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Microsoft.Extensions.Options;
     using Microsoft.AspNetCore.Identity;
 
     using Application.Interfaces.Post;
     using Application.Interfaces.Identity;
+    using Application.Interfaces.Account;
     using Application.Handlers.Identity.Commands.Password;
 
     using Domain.Entities.Identity;
     using Domain.Events.Identity.Password;
 
+    using Models.Settings;
+
     using Shared;
-    using Application.Interfaces.Account;
 
     public class PasswordService : IPasswordService
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly IEmailService _emailService;
-        private readonly INotificationService _notificationService;
+        private readonly IEmailService? _emailService;
+        private readonly INotificationService? _notificationService;
         private readonly IUserActivityService _userActivityService;
+        private readonly ApplicationSettings _applicationSettings;
 
         public PasswordService(
             UserManager<User> userManager,
-            IEmailService emailService,
-            INotificationService notificationService,
+            IUserActivityService userActivityService,
             SignInManager<User> signInManager,
-            IUserActivityService userActivityService)
+            IOptions<ApplicationSettings> applicationSettings,
+            IEmailService? emailService = null,
+            INotificationService? notificationService = null)
         {
             _userManager = userManager;
+            _userActivityService = userActivityService;
+            _signInManager = signInManager;
             _emailService = emailService;
             _notificationService = notificationService;
-            _signInManager = signInManager;
-            _userActivityService = userActivityService;
+            _applicationSettings = applicationSettings!.Value;
         }
 
         public async Task<Result<string>> ForgotPassword(ForgotPasswordCommand request, CancellationToken cancellationToken)
@@ -48,10 +54,13 @@
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
             var resetLink = $"{request.ResetPasswordUrl}?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}";
 
-            var emailSent = await _emailService.SendEmailAsync(
+            bool emailSent = false;
+
+            if (_applicationSettings.UseMicroservices && _emailService != null)
+            {
+                emailSent = await _emailService.SendEmailAsync(
                 user.Email,
                 "Reset Your Password",
                 $@"<p>You've requested to reset your password.</p>
@@ -59,17 +68,13 @@
                    <p>If you didn't request this, please ignore this email.</p>
                    <p>This link will expire in 24 hours.</p>",
                 "Identity API");
+            }
 
             await _userActivityService.LogActivityAsync(
                 user.Id,
                 "ForgotPassword",
                 emailSent,
-                emailSent ? "Password reset email sent" : "Failed to send password reset email");
-
-            if (!emailSent)
-            {
-                return Result<string>.Failure("Failed to send password reset email. Please try again later.");
-            }
+                emailSent ? "Password reset email sent." : "Password reset email skipped (fallback). Token generated.");
 
             return Result<string>.SuccessResult("If your email exists in our system, you will receive password reset instructions.");
         }
@@ -102,17 +107,23 @@
 
             user.AddDomainEvent(new PasswordResetEvent(user.Id));
 
-            await _emailService.SendEmailAsync(
-                user.Email,
-                "Password Reset Successful",
-                "<p>Your password has been reset successfully.</p>",
-                "Identity API");
+            if (_applicationSettings.UseMicroservices && _emailService != null)
+            {
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Password Reset Successful",
+                    "<p>Your password has been reset successfully.</p>",
+                    "Identity API");
+            }
 
-            await _notificationService.SendNotificationAsync(
-                user.Id,
-                "Password Reset",
-                "Your password has been reset successfully.",
-                "password_reset");
+            if (_applicationSettings.UseMicroservices && _notificationService != null)
+            {
+                await _notificationService.SendNotificationAsync(
+                    user.Id,
+                    "Password Reset",
+                    "Your password has been reset successfully.",
+                    "password_reset");
+            }
 
             return Result<string>.SuccessResult("Password has been reset successfully.");
         }

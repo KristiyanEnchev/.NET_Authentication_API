@@ -10,6 +10,7 @@ namespace Models.Settings
         public string Issuer { get; set; } = "http://localhost:8080";
         public string Audience { get; set; } = "urn:qa/identity";
         public int RsaKeyExpirationInDays { get; set; } = 30;
+        public bool UseMicroservices { get; set; } = false;
     }
 
     public class TokenNames
